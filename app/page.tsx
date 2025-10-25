@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/app/components/providers/layout/header'
 import Footer from '@/app/components/providers/layout/footer'
 import HeroSection from '@/app/components/providers/home/hero-section'
@@ -20,12 +21,19 @@ import { Heading1 } from 'lucide-react'
 // import NewsletterModal from '@/components/shared/newsletter-modal'
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isMounted && !loading && user && isAdmin) {
+      router.push('/admin');
+    }
+  }, [isMounted, loading, user, isAdmin, router]);
 
   // Show loading during SSR and initial client render
   if (!isMounted || loading) {
@@ -34,6 +42,11 @@ export default function HomePage() {
         <h1>Loading...</h1>
       </div>
     );
+  }
+
+  // Don't render anything for admins as they will be redirected
+  if (user && isAdmin) {
+    return null;
   }
 
   if (user) {

@@ -6,7 +6,28 @@ const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (userId) => {
+    try {
+      const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Check for demo user first
@@ -15,6 +36,12 @@ const AuthProvider = ({ children }) => {
       try {
         const user = JSON.parse(demoUser);
         setUser(user);
+        // For demo user, create a mock profile with client role
+        setProfile({
+          id: user.id,
+          role: 'client',
+          full_name: user.user_metadata?.name || 'Demo User'
+        });
         setLoading(false);
         return;
       } catch (err) {
@@ -22,31 +49,34 @@ const AuthProvider = ({ children }) => {
       }
     }
 
-    client.auth.getSession().then(({ data }) => {
-        setUser(data?.session?.user || null);
-        setLoading(false)
-    });
+    const initializeAuth = async () => {
+      const { data: { session } } = await client.auth.getSession();
 
-    const { data: listener } = client.auth.onAuthStateChange((event, session) => {
-        setUser(session?.user || null);
+      if (session?.user) {
+        setUser(session.user);
+        const userProfile = await fetchProfile(session.user.id);
+        setProfile(userProfile);
+      }
+
+      setLoading(false);
+    };
+
+    initializeAuth();
+
+    const { data: listener } = client.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        const userProfile = await fetchProfile(session.user.id);
+        setProfile(userProfile);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
     });
 
     return () => {
       listener.subscription.unsubscribe();
-    }
-
-    // const fetchUser = async () => {
-    //   try {
-    //     const response = await client.get('/auth/user');
-    //     setUser(response.data);
-    //   } catch (error) {
-    //     console.error('Failed to fetch user:', error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    // fetchUser();
+    };
   }, []);
 
   // const login = async (credentials) => {
@@ -68,12 +98,14 @@ const AuthProvider = ({ children }) => {
   // };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        loading, 
-        // login, 
-        // logout 
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isAdmin: profile?.role === 'admin',
+        // login,
+        // logout
       }}>
         {children}
     </AuthContext.Provider>

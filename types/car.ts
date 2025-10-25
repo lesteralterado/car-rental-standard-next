@@ -71,7 +71,22 @@ export interface Booking {
   updatedAt: string
 }
 
-// data/cars.ts - 20 Premium Car Listings
+// Fetch cars from API
+export async function fetchCars(): Promise<Car[]> {
+  try {
+    const response = await fetch('/api/cars')
+    if (!response.ok) {
+      throw new Error('Failed to fetch cars')
+    }
+    const data = await response.json()
+    return data.cars || []
+  } catch (error) {
+    console.error('Error fetching cars:', error)
+    return []
+  }
+}
+
+// data/cars.ts - Sample Car Listings (fallback)
 export const cars: Car[] = [
   {
     id: '1',

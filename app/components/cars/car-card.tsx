@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Star, Users, Settings, Fuel, Heart, MapPin, Calendar, Clock } from 'lucide-react'
 import type { Car } from '@/types/car'
+import useAuth from '@/hooks/useAuth'
+import BookingModal from '@/app/components/providers/home/booking-modal'
+import { toast } from 'react-hot-toast'
 
 interface CarCardProps {
   car: Car
@@ -12,13 +15,22 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car, view = 'grid' }: CarCardProps) {
+  const { user } = useAuth()
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setIsWishlisted(!isWishlisted)
+  }
+
+  const handleBook = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    setIsBookingModalOpen(true)
   }
 
   const formatPrice = (price: number) => {
@@ -109,7 +121,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="h-4 w-4 text-primary" />
-                    <span>{car.availability.locations.length} locations</span>
+                    <span>{car.availability?.locations?.length || 0} locations</span>
                   </div>
                 </div>
 
@@ -141,7 +153,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
                   </div>
                 </div>
                 <div className="flex flex-col space-y-2">
-                  <button className="btn btn-primary btn-default">
+                  <button onClick={handleBook} className="btn btn-primary btn-default">
                     Book Now
                   </button>
                   <button className="btn btn-outline btn-sm text-xs">
@@ -152,6 +164,13 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
             </div>
           </div>
         </div>
+  
+        {/* Booking Modal */}
+        <BookingModal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          carModel={car.name}
+        />
       </Link>
     )
   }
@@ -238,7 +257,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
             </div>
             <div className="flex items-center space-x-2">
               <MapPin className="h-4 w-4 text-primary" />
-              <span>{car.availability.locations.length} locations</span>
+              {/* <span>{car.availability?.locations.length}</span> */}
             </div>
           </div>
 
@@ -265,12 +284,19 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
               <div className="text-2xl font-bold text-primary">{formatPrice(car.pricePerDay)}</div>
               <div className="text-sm text-gray-500">per day</div>
             </div>
-            <button className="btn btn-primary btn-default">
+            <button onClick={handleBook} className="btn btn-primary btn-default">
               Book Now
             </button>
           </div>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        carModel={car.name}
+      />
     </Link>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, Car, Phone, Mail, User, LogOut } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
+import NotificationBell from '@/app/components/NotificationBell'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -19,6 +20,10 @@ export default function Header() {
     { name: 'Cars', href: '/cars' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
+  ]
+
+  const userNavigation = [
+    { name: 'Inquiry', href: '/inquiry' },
   ]
 
   const handleLogout = () => {
@@ -42,7 +47,8 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="p-2 bg-primary rounded-lg group-hover:bg-primary/90 transition-colors">
-                <Car className="h-6 w-6 text-white" />
+                {/* <Car className="h-6 w-6 text-white" /> */}
+                <img src="/assets/old_logo.png" alt="CarRental Pro Logo" className="h-6 w-6 object-contain" />
               </div>
               <span className="text-2xl font-bold text-gray-900">
                 CarRental <span className="text-primary">Pro</span>
@@ -52,6 +58,16 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors relative group"
+                >
+                  {item.name}
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+                </Link>
+              ))}
+              {isMounted && user && userNavigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -78,6 +94,7 @@ export default function Header() {
 
               {isMounted && user ? (
                 <div className="flex items-center space-x-4">
+                  <NotificationBell />
                   <div className="flex items-center space-x-2 text-sm">
                     <User className="h-4 w-4 text-primary" />
                     <span className="text-gray-700">
@@ -94,10 +111,10 @@ export default function Header() {
                 </div>
               ) : (
                 <Link
-                  href="/booking"
+                  href="/cars"
                   className="btn btn-primary btn-default"
                 >
-                  Book Now
+                  Browse Cars
                 </Link>
               )}
             </div>
@@ -127,6 +144,16 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+              {isMounted && user && userNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="block px-3 py-3 text-base font-medium text-gray-700 hover:text-primary hover:bg-white rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
               
               <div className="pt-4 border-t border-gray-200 space-y-3">
                 <div className="px-3 py-2">
@@ -142,11 +169,14 @@ export default function Header() {
 
                 {isMounted && user ? (
                   <div className="px-3 space-y-3">
-                    <div className="flex items-center space-x-2 text-sm text-gray-700 py-2">
-                      <User className="h-4 w-4 text-primary" />
-                      <span>
-                        {(user as any)?.email === 'demo@example.com' ? 'Demo User' : ((user as any)?.email || 'User')}
-                      </span>
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2 text-sm text-gray-700">
+                        <User className="h-4 w-4 text-primary" />
+                        <span>
+                          {(user as any)?.email === 'demo@example.com' ? 'Demo User' : ((user as any)?.email || 'User')}
+                        </span>
+                      </div>
+                      <NotificationBell />
                     </div>
                     <button
                       onClick={() => {
@@ -162,11 +192,11 @@ export default function Header() {
                 ) : (
                   <div className="px-3">
                     <Link
-                      href="/booking"
+                      href="/cars"
                       className="btn btn-primary btn-default w-full"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Book Now
+                      Browse Cars
                     </Link>
                   </div>
                 )}
