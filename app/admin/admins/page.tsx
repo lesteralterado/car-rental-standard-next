@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Shield, Trash2, UserCheck } from 'lucide-react'
 import { toast } from 'react-hot-toast'
-import AdminSidebar from '@/app/components/AdminSidebar'
 
 interface AdminUser {
   id: string
@@ -172,11 +171,7 @@ export default function AdminManagement() {
 //   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <div className="p-6">
           <div className="mb-8 flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Management</h1>
@@ -372,8 +367,6 @@ export default function AdminManagement() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
     </div>
   )
 }

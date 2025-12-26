@@ -45,7 +45,7 @@ export default function Testimonials() {
       <div className="container mx-auto px-4">
         {/* Heading */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 relative inline-block after:block after:w-20 after:h-1 after:bg-yellow-500 after:mx-auto after:mt-2">
+          <h2 className="text-4xl font-bold mb-4 relative inline-block after:block after:w-20 after:h-1 after:bg-blue-500 after:mx-auto after:mt-2">
             What Our Clients Say
           </h2>
           <p className="text-lg text-gray-500">
@@ -85,7 +85,7 @@ export default function Testimonials() {
                 </div>
 
                 {/* Rating */}
-                <div className="flex text-yellow-500 mb-4">
+                <div className="flex text-blue-500 mb-4">
                   {Array.from({ length: Math.floor(t.rating) }).map((_, i) => (
                     <FaStar key={i} />
                   ))}
@@ -105,7 +105,7 @@ export default function Testimonials() {
         </Swiper>
 
         {/* Button */}
-        <button className="mt-8 mx-auto block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+        <button className="mt-8 mx-auto block bg-blue-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition">
           Leave a Review
         </button>
       </div>

@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/app/components/providers/layout/header'
-import Footer from '@/app/components/providers/layout/footer'
 import HeroSection from '@/app/components/providers/home/hero-section'
 import FeaturedCars from '@/app/components/providers/home/featured-cars'
 import AboutSection from './components/providers/home/about'
@@ -49,28 +47,19 @@ export default function HomePage() {
     return null;
   }
 
-  if (user) {
-    return (
-      <>
-        <Header />
-        <main className="overflow-hidden">
-          <HeroSection />
-          <FeaturedCars />
-          <AboutSection />
-          <Testimonials />
-          <ContactSection />
-          <FAQSection />
-          {/* <StatsSection /> */}
-          {/* <ServicesSection />
-          <TestimonialsSection />
-          <NewsletterSection /> */}
-        </main>
-        <Footer />
-        {/* <ChatWidget />
-        <NewsletterModal /> */}
-      </>
-    );
-  }
-
-  return <LoginForm />;
+  // Show home page for guests and clients
+  return (
+    <main className="overflow-hidden">
+      <HeroSection />
+      <FeaturedCars />
+      <AboutSection />
+      <Testimonials />
+      <ContactSection />
+      <FAQSection />
+      {/* <StatsSection /> */}
+      {/* <ServicesSection />
+      <TestimonialsSection />
+      <NewsletterSection /> */}
+    </main>
+  );
 }

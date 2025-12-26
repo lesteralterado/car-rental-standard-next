@@ -32,7 +32,7 @@ export default function CarsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <div className="bg-primary text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
@@ -65,19 +65,19 @@ export default function CarsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
-              <div className="text-3xl font-bold text-blue-600">{cars.length}+</div>
+              <div className="text-3xl font-bold text-primary">{cars.length}+</div>
               <div className="text-gray-600">Vehicles Available</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-600">24/7</div>
+              <div className="text-3xl font-bold text-primary">24/7</div>
               <div className="text-gray-600">Customer Support</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-600">100%</div>
+              <div className="text-3xl font-bold text-primary">100%</div>
               <div className="text-gray-600">Satisfaction Rate</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-600">50+</div>
+              <div className="text-3xl font-bold text-primary">50+</div>
               <div className="text-gray-600">Pickup Locations</div>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function CarsPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-blue-600 text-white py-16">
+      <div className="bg-primary text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Book Your Car?

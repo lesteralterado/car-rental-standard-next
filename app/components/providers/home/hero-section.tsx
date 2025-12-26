@@ -54,36 +54,52 @@ export default function HeroSection() {
     );
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <section className="relative py-20 min-h-screen flex items-center">
+      {/* Background Video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        {/* <source src="https://res.cloudinary.com/dhxi75eld/video/upload/v1766235367/vecteezy_random-cars-driving-by-4k-stock-video_1614869_erhdom.mp4" type="video/mp4" /> */}
+        <source src="https://res.cloudinary.com/dhxi75eld/video/upload/v1766235330/vecteezy_drone-follows-a-sports-car-from-right-close-shot-in-4k_1617207_bemoru.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-white/25 z-10"></div>
+
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-fade-in">
           {/* Section Header */}
           <div className="mb-16">
-            <div className="inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold mb-4">
+            <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
               🚗 Premium Car Rental
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Find Your <span className="text-gradient">Perfect Ride</span>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Find Your Perfect Ride
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Discover premium vehicles at unbeatable prices. Book instantly with our seamless rental experience.
             </p>
           </div>
 
           {/* Search Form */}
-          <div className="bg-white rounded-2xl p-8 max-w-6xl mx-auto shadow-lg">
+          <div className="bg-card rounded-2xl p-8 max-w-6xl mx-auto shadow-lg border">
             <form onSubmit={handleSearch} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 {/* Location */}
                 <div className="lg:col-span-1">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
                     <MapPin className="inline h-4 w-4 mr-2" />
                     Pickup Location
                   </label>
                   <select
                     value={searchForm.location}
                     onChange={(e) => setSearchForm({...searchForm, location: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-gray-50 hover:bg-white"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent text-foreground bg-background hover:bg-accent/5 transition-colors"
                     required
                   >
                     <option value="">Select location</option>
@@ -96,7 +112,7 @@ export default function HeroSection() {
 
                 {/* Pickup Date */}
                 <div className="lg:col-span-1">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
                     <Calendar className="inline h-4 w-4 mr-2" />
                     Pickup Date
                   </label>
@@ -105,13 +121,13 @@ export default function HeroSection() {
                     onChange={(date) => setSearchForm({...searchForm, pickupDate: date})}
                     placeholderText="Select pickup date"
                     minDate={new Date()}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-gray-50 hover:bg-white"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent text-foreground bg-background hover:bg-accent/5 transition-colors"
                   />
                 </div>
 
                 {/* Return Date */}
                 <div className="lg:col-span-1">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
                     <Calendar className="inline h-4 w-4 mr-2" />
                     Return Date
                   </label>
@@ -120,20 +136,20 @@ export default function HeroSection() {
                     onChange={(date) => setSearchForm({...searchForm, returnDate: date})}
                     placeholderText="Select return date"
                     minDate={minReturnDate}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-gray-50 hover:bg-white"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent text-foreground bg-background hover:bg-accent/5 transition-colors"
                   />
                 </div>
 
                 {/* Time Selection */}
                 <div className="lg:col-span-1">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-foreground mb-3">
                     <Clock className="inline h-4 w-4 mr-2" />
                     Pickup Time
                   </label>
                   <select
                     value={searchForm.pickupTime}
                     onChange={(e) => setSearchForm({...searchForm, pickupTime: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-gray-50 hover:bg-white"
+                    className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent text-foreground bg-background hover:bg-accent/5 transition-colors"
                   >
                     {Array.from({length: 24}, (_, i) => {
                       const hour = i.toString().padStart(2, '0')
@@ -152,18 +168,18 @@ export default function HeroSection() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-14 bg-primary text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:bg-primary-dark transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full h-14 bg-primary text-primary-foreground rounded-lg font-semibold shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground mr-2"></div>
                         Searching...
                       </div>
                     ) : (
-                      <>
+                      <div className="flex items-center justify-center">
                         <Search className="h-5 w-5 mr-2" />
                         Search Cars
-                      </>
+                      </div>
                     )}
                   </button>
                 </div>

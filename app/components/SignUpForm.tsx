@@ -129,7 +129,7 @@ export default function SignUpForm() {
             </Button>
           </form>
           <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Already have an account? <a href="#" className="text-blue-600 hover:underline">Sign in</a></p>
+            <p>Already have an account? <a href="/login" className="text-blue-600 hover:underline">Sign in</a></p>
           </div>
         </CardContent>
       </Card>

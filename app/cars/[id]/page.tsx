@@ -241,6 +241,17 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
         return
       }
 
+      // Create notification for user
+      await client
+        .from('notifications')
+        .insert({
+          user_id: (user as any).id,
+          type: 'booking_submitted',
+          title: 'Booking Request Submitted',
+          message: `Your booking request for ${car.name} has been submitted and is pending admin approval.`,
+          read: false
+        })
+
       toast.success("Booking request submitted! We'll notify you once it's reviewed by our admin.")
       setShowBookingForm(false)
       setBookingStep(1)

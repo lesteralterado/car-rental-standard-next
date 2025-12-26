@@ -7,7 +7,7 @@ import client from '@/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Users, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
-import AdminSidebar from '@/app/components/AdminSidebar';
+import AdminRoute from '@/app/components/AdminRoute';
 
 interface DashboardStats {
   totalBookings: number;
@@ -30,7 +30,7 @@ interface RecentBooking {
 }
 
 export default function AdminDashboard() {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
@@ -42,15 +42,11 @@ export default function AdminDashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      // if (!user || !isAdmin) {
-      //   router.push('/');
-      //   return;
-      // }
+    if (user) {
       fetchStats();
       fetchRecentBookings();
     }
-  }, [user, isAdmin, loading, router]);
+  }, [user]);
 
   const fetchRecentBookings = async () => {
     try {
@@ -119,28 +115,9 @@ export default function AdminDashboard() {
   };
 
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  // if (!isAdmin) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-lg text-red-500">Access denied. Admin privileges required.</div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <AdminRoute>
+      <div className="p-6">
           <div className="mb-8 flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
@@ -303,10 +280,9 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
       </div>
-    </div>
+    </AdminRoute>
   );
 }

@@ -9,7 +9,7 @@ import { Badge } from '../../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import AdminSidebar from '@/app/components/AdminSidebar';
+import AdminRoute from '@/app/components/AdminRoute';
 
 interface Booking {
   id: string;
@@ -35,15 +35,15 @@ interface Booking {
 }
 
 export default function AdminBookings() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
 
   useEffect(() => {
-    if (!loading && isAdmin) {
+    if (user) {
       fetchBookings();
     }
-  }, [loading, isAdmin]);
+  }, [user]);
 
   const fetchBookings = async () => {
     try {
@@ -74,12 +74,34 @@ export default function AdminBookings() {
 
   const updateBookingStatus = async (bookingId: string, status: 'confirmed' | 'rejected') => {
     try {
+      // First get the booking to know the user_id
+      const { data: booking, error: fetchError } = await client
+        .from('bookings')
+        .select('user_id, cars(name)')
+        .eq('id', bookingId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       const { error } = await client
         .from('bookings')
         .update({ status })
         .eq('id', bookingId);
 
       if (error) throw error;
+
+      // Create notification for user
+      await client
+        .from('notifications')
+        .insert({
+          user_id: booking.user_id,
+          type: status === 'confirmed' ? 'booking_approved' : 'booking_rejected',
+          title: status === 'confirmed' ? 'Booking Approved' : 'Booking Rejected',
+          message: status === 'confirmed'
+            ? `Your booking request has been approved. Please proceed with payment to complete the rental process.`
+            : `Your booking request has been rejected. Please contact us for more information.`,
+          read: false
+        });
 
       // Refresh bookings
       fetchBookings();
@@ -105,28 +127,9 @@ export default function AdminBookings() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  // if (!user || !isAdmin) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-lg text-red-500">Access denied. Admin privileges required.</div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <AdminRoute>
+      <div className="p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
             <p className="text-gray-600 mt-2">Review and manage customer bookings</p>
@@ -258,8 +261,7 @@ export default function AdminBookings() {
               </Tabs>
             </CardContent>
           </Card>
-        </div>
       </div>
-    </div>
+    </AdminRoute>
   );
 }

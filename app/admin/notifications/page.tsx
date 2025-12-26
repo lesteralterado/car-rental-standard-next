@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Bell, Eye, EyeOff, Trash2, Users, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
-import AdminSidebar from '@/app/components/AdminSidebar'
 import client from '@/api/client'
 
 interface Notification {
@@ -167,11 +166,7 @@ export default function AdminNotificationsPage() {
 //   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <div className="p-6">
           <div className="mb-8 flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
@@ -392,8 +387,6 @@ export default function AdminNotificationsPage() {
               )}
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
     </div>
   )
 }

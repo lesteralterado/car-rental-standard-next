@@ -68,7 +68,7 @@ export default function FeaturedCars() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold mb-4">
-            ⭐ Premium Collection
+            Premium Collection
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Featured <span className="text-gradient">Vehicles</span>

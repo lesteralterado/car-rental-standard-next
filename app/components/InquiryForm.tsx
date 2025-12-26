@@ -65,6 +65,17 @@ export default function InquiryForm() {
         return;
       }
 
+      // Create notification for user
+      await client
+        .from('notifications')
+        .insert({
+          user_id: (user as any).id,
+          type: 'inquiry_submitted',
+          title: 'Inquiry Submitted',
+          message: 'Your car availability inquiry has been submitted. We will get back to you soon.',
+          read: false
+        })
+
       toast.success('Inquiry submitted successfully! We will get back to you soon.');
       setFormData({
         carId: '',

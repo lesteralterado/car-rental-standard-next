@@ -36,10 +36,10 @@ const AuthProvider = ({ children }) => {
       try {
         const user = JSON.parse(demoUser);
         setUser(user);
-        // For demo user, create a mock profile with client role
+        // For demo user, create a mock profile with the correct role
         setProfile({
           id: user.id,
-          role: 'client',
+          role: user.role || 'client',
           full_name: user.user_metadata?.name || 'Demo User'
         });
         setLoading(false);

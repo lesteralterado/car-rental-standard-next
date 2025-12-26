@@ -7,6 +7,10 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from './components/context/AuthProvider'
 import Chatbot from './components/Chatbot'
+import Header from './components/providers/layout/header'
+import Footer from './components/providers/layout/footer'
+import AdminSidebar from './components/AdminSidebar'
+import LayoutContent from './components/LayoutContent'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ 
@@ -42,7 +46,7 @@ export const metadata: Metadata = {
     siteName: 'CarRental Pro',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: '/public/assets/logo.png',
         width: 1200,
         height: 630,
         alt: 'CarRental Pro - Premium Car Rental Service'
@@ -80,7 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href='../public/assets/old_logo.png' type="image/svg+xml" />
+        <link rel="icon" href='/assets/Untitled design (6).png' type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#2563eb" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
@@ -94,11 +98,13 @@ export default function RootLayout({
         > */}
           <div className="min-h-screen bg-background text-foreground">
             <AuthProvider>
-              {children}
+              <LayoutContent>
+                {children}
+              </LayoutContent>
             </AuthProvider>
             <Chatbot />
           </div>
-          <Toaster 
+          <Toaster
             position="top-center"
             toastOptions={{
               duration: 4000,
