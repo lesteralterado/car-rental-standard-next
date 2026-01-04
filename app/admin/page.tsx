@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import client from '@/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Users, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Car, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
 import AdminRoute from '@/app/components/AdminRoute';
 
 interface DashboardStats {
@@ -31,7 +31,7 @@ interface RecentBooking {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     pendingBookings: 0,

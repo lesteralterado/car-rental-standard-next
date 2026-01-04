@@ -59,6 +59,7 @@ export default function LoginForm() {
       } catch (err) {
         setError('Demo login failed');
         setLoading(false);
+        console.error('Demo login error:', err);
         return;
       }
     }
@@ -177,7 +178,7 @@ export default function LoginForm() {
             </div>
           </form>
           <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a></p>
+            <p>Don&quot; have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a></p>
             <p className="mt-2 text-xs">
               <strong>All Demo Accounts:</strong><br />
               Password: demo123

@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Car, Phone, Mail, User, LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { Menu, Phone, Mail, User, LogOut, X } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import NotificationBell from '@/app/components/NotificationBell'
+import { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -48,7 +50,7 @@ export default function Header() {
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="p-2 bg-primary rounded-lg group-hover:bg-primary/90 transition-colors">
                 {/* <Car className="h-6 w-6 text-white" /> */}
-                <img src="/assets/Untitled design (6).png" alt="CarRental Pro Logo" className="h-6 w-6 object-contain bg-white" />
+                <Image src="/assets/Untitled design (6).png" alt="CarRental Pro Logo" width={24} height={24} className="h-6 w-6 object-contain bg-white" />
               </div>
               <span className="text-2xl font-bold text-foreground">
                 CarRental 
@@ -99,7 +101,7 @@ export default function Header() {
                   <div className="flex items-center space-x-2 text-sm">
                     <User className="h-4 w-4 text-primary" />
                     <span className="text-foreground">
-                      {(user as any)?.email === 'demo@example.com' ? 'Demo User' : ((user as any)?.email || 'User')}
+                      {(user as SupabaseUser)?.email === 'demo@example.com' ? 'Demo User' : ((user as SupabaseUser)?.email || 'User')}
                     </span>
                   </div>
                   <button
@@ -182,7 +184,7 @@ export default function Header() {
                       <div className="flex items-center space-x-2 text-sm text-foreground">
                         <User className="h-4 w-4 text-primary" />
                         <span>
-                          {(user as any)?.email === 'demo@example.com' ? 'Demo User' : ((user as any)?.email || 'User')}
+                          {(user as SupabaseUser)?.email === 'demo@example.com' ? 'Demo User' : ((user as SupabaseUser)?.email || 'User')}
                         </span>
                       </div>
                       <NotificationBell />

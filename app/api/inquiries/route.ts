@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import client from '@/api/client';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { data: { user } } = await client.auth.getUser();
 

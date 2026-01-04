@@ -42,6 +42,7 @@ export default function PaymentModal({ isOpen, onClose, amount, onPaymentSuccess
       setCardholderName('');
     } catch (error) {
       toast.error('Payment failed. Please try again.');
+      console.error('Payment error:', error);
     } finally {
       setLoading(false);
     }

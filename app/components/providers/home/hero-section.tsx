@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, MapPin, Calendar, Clock, Star } from 'lucide-react'
+import { Search, MapPin, Calendar, Clock } from 'lucide-react'
 import CustomDatePicker from '@/app/components/ui/date-picker'
 // import { Canvas } from "@react-three/fiber";
 // import { Suspense } from "react";
@@ -47,11 +47,11 @@ export default function HeroSection() {
 
   const minReturnDate = searchForm.pickupDate ? new Date(searchForm.pickupDate.getTime() + 24 * 60 * 60 * 1000) : new Date()
   
-  const LoadingSpinner = () => (
-    <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-    </div>
-    );
+  // const LoadingSpinner = () => (
+  //   <div className="flex items-center justify-center h-full">
+  //       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+  //   </div>
+  //   );
 
   return (
     <section className="relative py-20 min-h-screen flex items-center">
@@ -61,6 +61,7 @@ export default function HeroSection() {
         muted
         loop
         playsInline
+        {...{loading: "lazy"}}
         className="absolute inset-0 w-full h-full object-cover z-0"
       >
         {/* <source src="https://res.cloudinary.com/dhxi75eld/video/upload/v1766235367/vecteezy_random-cars-driving-by-4k-stock-video_1614869_erhdom.mp4" type="video/mp4" /> */}
@@ -69,7 +70,7 @@ export default function HeroSection() {
       </video>
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-white/25 z-10"></div>
+      <div className="absolute inset-0 bg-white/15 z-10"></div>
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-fade-in">

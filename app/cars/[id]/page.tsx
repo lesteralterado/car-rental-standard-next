@@ -3,8 +3,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, Calendar, CheckCircle, Shield, Award, ChevronRight, ChevronLeft, Upload, CreditCard } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, CheckCircle, Shield, Award, CreditCard } from 'lucide-react'
+import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -135,7 +136,7 @@ interface CarDetailPageProps {
 }
 
 export default function CarDetailPage({ params }: CarDetailPageProps) {
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const [showBookingForm, setShowBookingForm] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [bookingStep, setBookingStep] = useState(1)
@@ -193,7 +194,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
       let licenseUrl = null
       if (formData.driversLicense) {
         const fileExt = formData.driversLicense.name.split('.').pop()
-        const fileName = `${(user as any).id}_${Date.now()}.${fileExt}`
+        const fileName = `${(user as User).id}_${Date.now()}.${fileExt}`
         const { data: uploadData, error: uploadError } = await client.storage
           .from('licenses')
           .upload(fileName, formData.driversLicense)
@@ -215,14 +216,14 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
             drivers_license_number: formData.licenseNumber,
             drivers_license_url: licenseUrl,
           })
-          .eq('id', (user as any).id)
+          .eq('id', (user as User).id)
       }
 
       // Create booking request (pending admin approval)
-      const { data: booking, error: bookingError } = await client
+      const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          user_id: (user as any).id,
+          user_id: (user as User).id,
           car_id: car.id,
           pickup_date: formData.pickupDate,
           return_date: formData.returnDate,
@@ -245,7 +246,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
       await client
         .from('notifications')
         .insert({
-          user_id: (user as any).id,
+          user_id: (user as User).id,
           type: 'booking_submitted',
           title: 'Booking Request Submitted',
           message: `Your booking request for ${car.name} has been submitted and is pending admin approval.`,
@@ -513,7 +514,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
               .filter(c => c.id !== car.id && c.category === car.category)
               .slice(0, 3)
               .map((similarCar) => (
-                <CarCard key={similarCar.id} car={similarCar as any} />
+                <CarCard key={similarCar.id} car={similarCar as Car} />
               ))}
           </div>
         </div>
@@ -585,7 +586,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                         onClick={() => setAuthMode('signup')}
                         className="text-blue-500 hover:underline"
                       >
-                        Don't have an account? Sign up
+                        Don&quot;t have an account? Sign up
                       </button>
                     </div>
                   ) : (
@@ -723,7 +724,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                   {bookingStep === 3 && (
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="licenseNumber">Driver's License Number</Label>
+                        <Label htmlFor="licenseNumber">Driver&quot;s License Number</Label>
                         <Input
                           id="licenseNumber"
                           name="licenseNumber"
@@ -734,7 +735,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="driversLicense">Upload Driver's License</Label>
+                        <Label htmlFor="driversLicense">Upload Driver&quot;s License</Label>
                         <Input
                           id="driversLicense"
                           name="driversLicense"
@@ -746,7 +747,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                           }}
                           required
                         />
-                        <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver's license</p>
+                        <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver&quot;s license</p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h4 className="font-medium mb-2">Payment Information</h4>
@@ -802,7 +803,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                       <div className="bg-yellow-50 p-4 rounded-lg">
                         <p className="text-sm text-yellow-800">
                           <strong>Note:</strong> Your booking request will be reviewed by our admin team.
-                          You'll receive a notification once it's approved and payment details will be provided.
+                          You&quot;ll receive a notification once it&quot;s approved and payment details will be provided.
                         </p>
                       </div>
                     </div>

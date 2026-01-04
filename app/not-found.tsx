@@ -24,8 +24,8 @@ export default function NotFound() {
               Oops! Page Not Found
             </CardTitle>
             <CardDescription className="text-lg text-gray-600">
-              The page you're looking for seems to have taken a detour. Don't worry,
-              let's get you back on track!
+              The page you&quot;re looking for seems to have taken a detour. Don&quot;t worry,
+              let&quot;s get you back on track!
             </CardDescription>
           </CardHeader>
 
@@ -103,7 +103,7 @@ export default function NotFound() {
         {/* Fun Message */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 italic">
-            "Even the best drivers take wrong turns sometimes!" 🏎️
+            &quot;Even the best drivers take wrong turns sometimes!&quot; 🏎️
           </p>
         </div>
       </div>

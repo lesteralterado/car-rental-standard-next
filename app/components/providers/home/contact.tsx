@@ -39,7 +39,7 @@ export default function ContactSection() {
               <div>
                 <h4 className="m-0 mb-[5px] text-[18px]">Call Us</h4>
                 <p className="m-0 text-primary">
-                  +1 (800) THREE BROTHER'S
+                  +1 (800) THREE BROTHER&quot;S
                 </p>
                 <p className="m-0 text-primary">
                   +1 (310) 555-1234
@@ -81,21 +81,41 @@ export default function ContactSection() {
 
             {/* Social Links */}
             <div className="flex gap-[15px] mt-[30px]">
-              {[
-                <FaFacebookF />,
-                <FaInstagram />,
-                <FaTwitter />,
-                <FaLinkedinIn />,
-                <FaYoutube />,
-              ].map((Icon, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
-                >
-                  {Icon}
-                </a>
-              ))}
+              <a
+                key="facebook"
+                href="#"
+                className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
+              >
+                <FaFacebookF />
+              </a>
+              <a
+                key="instagram"
+                href="#"
+                className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
+              >
+                <FaInstagram />
+              </a>
+              <a
+                key="twitter"
+                href="#"
+                className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
+              >
+                <FaTwitter />
+              </a>
+              <a
+                key="linkedin"
+                href="#"
+                className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
+              >
+                <FaLinkedinIn />
+              </a>
+              <a
+                key="youtube"
+                href="#"
+                className="w-10 h-10 bg-[var(--light)] text-[var(--primary)] rounded-full flex items-center justify-center no-underline transition-all duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:-translate-y-[3px]"
+              >
+                <FaYoutube />
+              </a>
             </div>
           </div>
 

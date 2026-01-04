@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { MessageSquare, Eye, Reply, CheckCircle, Clock } from 'lucide-react'
@@ -16,17 +16,10 @@ import { toast } from 'react-hot-toast'
 
 interface Inquiry {
   id: string
-  user_id: string
-  car_id: string
-  pickup_date: string
-  return_date: string
-  pickup_location: string
-  dropoff_location: string | null
-  message: string | null
-  status: 'pending' | 'responded' | 'closed'
-  admin_response: string | null
+  customer_id: string
+  car_id: string | null
+  message: string
   created_at: string
-  updated_at: string
   profiles: {
     full_name: string
     phone: string
@@ -39,10 +32,11 @@ interface Inquiry {
 }
 
 export default function AdminInquiriesPage() {
-  const { user, profile, loading, isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loadingInquiries, setLoadingInquiries] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isResponseOpen, setIsResponseOpen] = useState(false)
@@ -60,6 +54,8 @@ export default function AdminInquiriesPage() {
   }, [user, isAdmin, loading, router])
 
   const fetchInquiries = async () => {
+    setLoadingInquiries(true)
+    setError(null)
     try {
       const { data, error } = await client
         .from('inquiries')
@@ -80,7 +76,8 @@ export default function AdminInquiriesPage() {
       if (error) throw error
       setInquiries(data || [])
     } catch (error) {
-      console.error('Error fetching inquiries:', error)
+      console.error('Error fetching inquiries:', error instanceof Error ? error.message : error)
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
       toast.error('Failed to load inquiries')
     } finally {
       setLoadingInquiries(false)
@@ -222,6 +219,15 @@ export default function AdminInquiriesPage() {
               </CardContent>
             </Card>
           </div>
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-800">{error}</p>
+              <Button onClick={() => fetchInquiries()} variant="outline" size="sm" className="mt-2">
+                Retry
+              </Button>
+            </div>
+          )}
 
           {/* Inquiries Table */}
           <Card>
@@ -369,7 +375,7 @@ export default function AdminInquiriesPage() {
                       </div>
                     </div>
                   )}
-
+ 
                   {selectedInquiry.message && (
                     <div>
                       <label className="text-sm font-medium text-gray-700">Customer Message</label>

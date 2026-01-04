@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import PaymentModal from "@/app/components/PaymentModal";
 import LoginForm from "@/app/components/LoginForm";
 import SignUpForm from "@/app/components/SignUpForm";
+import { User } from "@supabase/supabase-js";
 
 type CarCardProps = {
     isOpen: boolean;
@@ -19,7 +20,6 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
    const [step, setStep] = useState(1);
    const [loading, setLoading] = useState(false);
    const [showPaymentModal, setShowPaymentModal] = useState(false);
-   const [confirmedBookingAmount, setConfirmedBookingAmount] = useState(0);
    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
    const [formData, setFormData] = useState({
      name: "",
@@ -124,7 +124,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
       let licenseUrl = null;
       if (formData.driversLicense) {
         const fileExt = formData.driversLicense.name.split('.').pop();
-        const fileName = `${(user as any).id}_${Date.now()}.${fileExt}`;
+        const fileName = `${(user as User).id}_${Date.now()}.${fileExt}`;
         const { data: uploadData, error: uploadError } = await client.storage
           .from('licenses')
           .upload(fileName, formData.driversLicense);
@@ -146,15 +146,15 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
             drivers_license_number: formData.licenseNumber,
             drivers_license_url: licenseUrl,
           })
-          .eq('id', (user as any).id);
+          .eq('id', (user as User).id);
       }
 
       // Create booking as pending for admin approval
       const bookingStatus = isAvailable ? 'pending' : 'rejected';
-      const { data: booking, error: bookingError } = await client
+      const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          user_id: (user as any).id,
+          user_id: (user as User).id,
           car_id: cars.id,
           pickup_date: formData.pickupDate,
           return_date: formData.returnDate,
@@ -279,7 +279,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
                     onClick={() => setAuthMode('signup')}
                     className="text-blue-500 hover:underline"
                   >
-                    Don't have an account? Sign up
+                    Don&quot;t have an account? Sign up
                   </button>
                 </div>
               ) : (
@@ -434,7 +434,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
           {step === 3 && (
             <div>
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Driver's License Number</label>
+                <label className="block mb-1 font-medium">Driver&quot;s License Number</label>
                 <input
                   type="text"
                   id="licenseNumber"
@@ -447,7 +447,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
               </div>
 
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Upload Driver's License</label>
+                <label className="block mb-1 font-medium">Upload Driver&quot;s License</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -458,7 +458,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
                   required
                   className="w-full border rounded px-3 py-2"
                 />
-                <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver's license</p>
+                <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver&quot;s license</p>
               </div>
 
               <div className="mb-4">
@@ -564,7 +564,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        amount={confirmedBookingAmount}
+        amount={0}
         onPaymentSuccess={handlePaymentSuccess}
       />
     </div>

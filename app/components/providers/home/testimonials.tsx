@@ -95,7 +95,7 @@ export default function Testimonials() {
                 {/* Content */}
                 <p className="italic text-gray-700 relative">
                   <span className="absolute -top-4 -left-2 text-7xl text-yellow-200 opacity-30">
-                    "
+                    &quot;
                   </span>
                   {t.text}
                 </p>

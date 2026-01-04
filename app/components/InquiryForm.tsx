@@ -10,6 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import client from '@/api/client';
 import useAuth from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { User } from '@supabase/supabase-js';
+
+interface CarOption {
+  id: string;
+  name: string;
+  brand: string;
+  model: string;
+}
 
 export default function InquiryForm() {
   const { user } = useAuth();
@@ -37,10 +45,10 @@ export default function InquiryForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await client
+      const { error } = await client
         .from('inquiries')
         .insert({
-          user_id: (user as any).id,
+          user_id: (user as User).id,
           car_id: formData.carId,
           pickup_date: formData.pickupDate,
           return_date: formData.returnDate,
@@ -69,7 +77,7 @@ export default function InquiryForm() {
       await client
         .from('notifications')
         .insert({
-          user_id: (user as any).id,
+          user_id: (user as User).id,
           type: 'inquiry_submitted',
           title: 'Inquiry Submitted',
           message: 'Your car availability inquiry has been submitted. We will get back to you soon.',
@@ -94,7 +102,7 @@ export default function InquiryForm() {
   };
 
   // Fetch available cars for the select dropdown
-  const [cars, setCars] = useState<any[]>([]);
+  const [cars, setCars] = useState<CarOption[]>([]);
 
   useEffect(() => {
     const fetchCars = async () => {

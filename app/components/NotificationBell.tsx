@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import useAuth from '@/hooks/useAuth';
 import client from '@/api/client';
+import { User } from '@supabase/supabase-js';
 
 interface Notification {
   id: string;
@@ -36,7 +37,7 @@ export default function NotificationBell() {
       const { data, error } = await client
         .from('notifications')
         .select('*')
-        .eq('user_id', (user as any).id)
+        .eq('user_id', (user as User).id)
         .order('created_at', { ascending: false })
         .limit(10);
 

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Bell, Eye, EyeOff, Trash2, Users, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 import client from '@/api/client'
 
@@ -26,7 +26,7 @@ interface Notification {
 }
 
 export default function AdminNotificationsPage() {
-  const { user, profile, loading, isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loadingNotifications, setLoadingNotifications] = useState(true)

@@ -22,8 +22,14 @@ interface AdminUser {
   last_sign_in_at: string | null
 }
 
+interface AdminData {
+  id: string
+  full_name: string | null
+  created_at: string
+}
+
 export default function AdminManagement() {
-  const { user, profile, loading, isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(true)
@@ -60,9 +66,9 @@ export default function AdminManagement() {
 
       // Get auth data separately for each admin
       const adminsWithAuth = await Promise.all(
-        data.map(async (admin: any) => {
+        data.map(async (admin: AdminData) => {
           try {
-            const { data: authData, error: authError } = await client.auth.admin.getUserById(admin.id)
+            const { data: authData } = await client.auth.admin.getUserById(admin.id)
             return {
               id: admin.id,
               email: authData?.user?.email || '',
@@ -124,9 +130,10 @@ export default function AdminManagement() {
         setFormData({ email: '', password: '', fullName: '' })
         fetchAdmins() // Refresh the list
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating admin:', error)
-      toast.error(error.message || 'Failed to create admin user')
+      const message = error instanceof Error ? error.message : 'Failed to create admin user'
+      toast.error(message)
     } finally {
       setCreating(false)
     }

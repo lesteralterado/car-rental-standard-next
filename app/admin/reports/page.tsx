@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BarChart3, TrendingUp, DollarSign, Calendar, Download, FileText } from 'lucide-react'
+import { TrendingUp, DollarSign, Calendar, Download, FileText } from 'lucide-react'
 
 interface BookingReport {
   id: string
@@ -34,7 +34,7 @@ interface RevenueData {
 }
 
 export default function AdminReportsPage() {
-  const { user, profile, loading, isAdmin } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
   const [bookings, setBookings] = useState<BookingReport[]>([])
   const [revenueData, setRevenueData] = useState<RevenueData[]>([])
@@ -105,7 +105,7 @@ export default function AdminReportsPage() {
       .forEach(booking => {
         const date = new Date(booking.created_at)
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-        const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+        // const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
 
         if (!monthlyMap.has(monthKey)) {
           monthlyMap.set(monthKey, { revenue: 0, bookings: 0 })

@@ -7,9 +7,9 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from './components/context/AuthProvider'
 import Chatbot from './components/Chatbot'
-import Header from './components/providers/layout/header'
-import Footer from './components/providers/layout/footer'
-import AdminSidebar from './components/AdminSidebar'
+// import Header from './components/providers/layout/header'
+// import Footer from './components/providers/layout/footer'
+// import AdminSidebar from './components/AdminSidebar'
 import LayoutContent from './components/LayoutContent'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })

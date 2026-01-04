@@ -8,9 +8,9 @@ import AboutSection from './components/providers/home/about'
 import Testimonials from '@/app/components/providers/home/testimonials'
 import ContactSection from './components/providers/home/contact'
 import FAQSection from './components/providers/home/faq'
-import LoginForm from './components/LoginForm'
+// import LoginForm from './components/LoginForm'
 import useAuth from '@/hooks/useAuth';
-import { Heading1 } from 'lucide-react'
+// import { Heading1 } from 'lucide-react'
 // import ServicesSection from '@/components/home/services-section'
 // import TestimonialsSection from '@/components/home/testimonials-section'
 // import StatsSection from '@/components/home/stats-section'
@@ -19,7 +19,7 @@ import { Heading1 } from 'lucide-react'
 // import NewsletterModal from '@/components/shared/newsletter-modal'
 
 export default function HomePage() {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 

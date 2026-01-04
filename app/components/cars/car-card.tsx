@@ -3,11 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Star, Users, Settings, Fuel, Heart, MapPin, Calendar, Clock } from 'lucide-react'
+import { Star, Users, Settings, Fuel, Heart, MapPin } from 'lucide-react'
 import type { Car } from '@/types/car'
-import useAuth from '@/hooks/useAuth'
+// import useAuth from '@/hooks/useAuth'
 import BookingModal from '@/app/components/providers/home/booking-modal'
-import { toast } from 'react-hot-toast'
+// import { toast } from 'react-hot-toast'
 
 interface CarCardProps {
   car: Car
@@ -15,7 +15,7 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car, view = 'grid' }: CarCardProps) {
-  const { user } = useAuth()
+  // const { user } = useAuth()
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import client from '@/api/client';
 
+interface InquiryUpdateData {
+  status?: string;
+  admin_response?: string;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -87,7 +92,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const updateData: any = {};
+    const updateData: InquiryUpdateData = {};
     if (status) updateData.status = status;
     if (admin_response !== undefined) updateData.admin_response = admin_response;
 
