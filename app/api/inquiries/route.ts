@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import client from '@/api/client';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const { data: { user } } = await client.auth.getUser();
 
@@ -20,6 +20,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = (page - 1) * limit;
+
     let query = client.from('inquiries').select(`
       *,
       cars (
@@ -29,21 +34,29 @@ export async function GET() {
         model,
         price_per_day
       )
-    `);
+    `, { count: 'exact' });
 
     // If not admin, only show user's own inquiries
     if (profile.role !== 'admin') {
       query = query.eq('user_id', user.id);
     }
 
-    const { data: inquiries, error } = await query.order('created_at', { ascending: false });
+    const { data: inquiries, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error('Error fetching inquiries:', error);
       return NextResponse.json({ error: 'Failed to fetch inquiries' }, { status: 500 });
     }
 
-    return NextResponse.json({ inquiries });
+    return NextResponse.json({
+      inquiries,
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit)
+    });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

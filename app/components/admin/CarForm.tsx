@@ -180,10 +180,17 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         formDataUpload.append('signature', signature)
         formDataUpload.append('folder', 'car-rental')
 
+        // Create AbortController for timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
         const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: 'POST',
-          body: formDataUpload
+          body: formDataUpload,
+          signal: controller.signal
         })
+
+        clearTimeout(timeoutId)
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
@@ -198,7 +205,11 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
           console.error('No secure_url in response:', result)
         }
       } catch (error) {
-        console.error('Error uploading image:', error)
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.error('Image upload timed out')
+        } else {
+          console.error('Error uploading image:', error instanceof Error ? error.message : error)
+        }
       }
     }
 
@@ -254,13 +265,20 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
       const url = car ? `/api/cars/${car.id}` : '/api/cars'
       const method = car ? 'PUT' : 'POST'
 
+      // Create AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(submitData),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         onSuccess()
@@ -268,7 +286,12 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         console.error('Failed to save car')
       }
     } catch (error) {
-      console.error('Error saving car:', error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('Request timed out')
+        alert('Request timed out. Please try again.')
+      } else {
+        console.error('Error saving car:', error)
+      }
     } finally {
       setSaving(false)
     }
