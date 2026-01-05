@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -16,19 +16,26 @@ import { toast } from 'react-hot-toast'
 
 interface Inquiry {
   id: string
-  customer_id: string
+  user_id: string
   car_id: string | null
+  pickup_date: string
+  return_date: string
+  pickup_location: string
+  dropoff_location: string | null
   message: string
+  status: string
+  admin_response: string | null
   created_at: string
+  updated_at: string
   profiles: {
     full_name: string
     phone: string
-  }[]
+  }
   cars: {
     name: string
     brand: string
     model: string
-  }[]
+  } | null
 }
 
 export default function AdminInquiriesPage() {
@@ -57,24 +64,12 @@ export default function AdminInquiriesPage() {
     setLoadingInquiries(true)
     setError(null)
     try {
-      const { data, error } = await client
-        .from('inquiries')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            phone
-          ),
-          cars:car_id (
-            name,
-            brand,
-            model
-          )
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setInquiries(data || [])
+      const response = await fetch('/api/inquiries')
+      if (!response.ok) {
+        throw new Error('Failed to fetch inquiries')
+      }
+      const data = await response.json()
+      setInquiries(data.inquiries || [])
     } catch (error) {
       console.error('Error fetching inquiries:', error instanceof Error ? error.message : error)
       setError(error instanceof Error ? error.message : 'An unexpected error occurred')
@@ -255,14 +250,14 @@ export default function AdminInquiriesPage() {
                       <TableRow key={inquiry.id}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{inquiry.profiles?.[0]?.full_name || 'Unknown'}</div>
-                            <div className="text-sm text-gray-500">{inquiry.profiles?.[0]?.phone}</div>
+                            <div className="font-medium">{inquiry.profiles?.full_name || 'Unknown'}</div>
+                            <div className="text-sm text-gray-500">{inquiry.profiles?.phone}</div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{inquiry.cars?.[0]?.name}</div>
-                            <div className="text-sm text-gray-500">{inquiry.cars?.[0]?.brand} {inquiry.cars?.[0]?.model}</div>
+                            <div className="font-medium">{inquiry.cars?.name}</div>
+                            <div className="text-sm text-gray-500">{inquiry.cars?.brand} {inquiry.cars?.model}</div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -329,19 +324,19 @@ export default function AdminInquiriesPage() {
                     <div>
                       <label className="text-sm font-medium text-gray-700">Customer</label>
                       <div className="mt-1 text-sm text-gray-600">
-                        {selectedInquiry.profiles?.[0]?.full_name || 'Unknown'}
+                        {selectedInquiry.profiles?.full_name || 'Unknown'}
                       </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Phone</label>
                       <div className="mt-1 text-sm text-gray-600">
-                        {selectedInquiry.profiles?.[0]?.phone}
+                        {selectedInquiry.profiles?.phone}
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-gray-700">Vehicle</label>
                     <div className="mt-1 text-sm text-gray-600">
-                      {selectedInquiry.cars?.[0]?.name} - {selectedInquiry.cars?.[0]?.brand} {selectedInquiry.cars?.[0]?.model}
+                      {selectedInquiry.cars?.name} - {selectedInquiry.cars?.brand} {selectedInquiry.cars?.model}
                     </div>
                   </div>
 

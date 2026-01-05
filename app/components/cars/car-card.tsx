@@ -20,6 +20,8 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
   const [imageError, setImageError] = useState(false)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
 
+  console.log(`CarCard for ${car.name}: images =`, car.images, `first image = "${car.images[0]}"`)
+
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -49,7 +51,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
             {/* Image */}
             <div className="lg:w-1/3">
               <div className="relative aspect-video rounded-lg overflow-hidden">
-                {!imageError ? (
+                {!imageError && car.images[0] && car.images[0].trim() ? (
                   <Image
                     src={car.images[0]}
                     alt={car.name}
@@ -181,7 +183,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
       <div className="car-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200">
         {/* Image */}
         <div className="relative aspect-video">
-          {!imageError ? (
+          {!imageError && car.images[0] && car.images[0].trim() ? (
             <Image
               src={car.images[0]}
               alt={car.name}

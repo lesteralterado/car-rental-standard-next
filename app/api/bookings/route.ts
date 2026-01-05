@@ -25,16 +25,23 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
+    // Get customer_id for filtering
+    const { data: customer } = await client
+      .from('customers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
     let query = client.from('bookings').select(`
       *,
-      profiles:user_id (
+      customers:customer_id (
         full_name,
         phone
       ),
       cars:car_id (
         id,
         name,
-        brand,
+        brand as make,
         model,
         price_per_day
       )
@@ -42,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // If not admin, only show user's own bookings
     if (profile.role !== 'admin') {
-      query = query.eq('user_id', user.id);
+      query = query.eq('customer_id', customer?.id);
     }
 
     const { data: bookings, error, count } = await query
@@ -78,8 +85,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       car_id,
-      pickup_date,
-      return_date,
+      start_date,
+      end_date,
       pickup_location,
       dropoff_location,
       total_price,
@@ -87,8 +94,19 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!car_id || !pickup_date || !return_date || !pickup_location || !total_price) {
+    if (!car_id || !start_date || !end_date || !pickup_location || !total_price) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Get customer_id
+    const { data: customer, error: customerError } = await client
+      .from('customers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (customerError || !customer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
     // Check if car exists and is available
@@ -113,7 +131,7 @@ export async function POST(request: NextRequest) {
       .eq('car_id', car_id)
       .neq('status', 'rejected')
       .neq('status', 'cancelled')
-      .or(`and(pickup_date.lte.${return_date},return_date.gte.${pickup_date})`);
+      .or(`and(start_date.lte.${end_date},end_date.gte.${start_date})`);
 
     if (availabilityError) {
       console.error('Availability check error:', availabilityError);
@@ -130,13 +148,14 @@ export async function POST(request: NextRequest) {
     const { data: booking, error: bookingError } = await client
       .from('bookings')
       .insert({
-        user_id: user.id,
+        customer_id: customer.id,
         car_id,
-        pickup_date,
-        return_date,
+        start_date,
+        end_date,
         pickup_location,
         dropoff_location: dropoff_location || null,
         total_price,
+        status: 'pending',
         drivers_license_verified: drivers_license_verified || false,
       })
       .select(`
@@ -144,7 +163,7 @@ export async function POST(request: NextRequest) {
         cars (
           id,
           name,
-          brand,
+          brand as make,
           model,
           price_per_day
         )

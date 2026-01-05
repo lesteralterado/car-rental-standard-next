@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import client from '@/api/client';
+import bcrypt from 'bcryptjs';
 
 export default function SignUpForm() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,10 +37,33 @@ export default function SignUpForm() {
 
       if (error) {
         setError(error.message);
-      } else {
-        setSuccess(true);
-        console.log('Sign up successful', data);
+        return;
       }
+
+      // After successful auth signup, create customer record
+      if (data.user) {
+        // Hash the password before storing
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const { error: customerError } = await client
+          .from('customers')
+          .insert({
+            name: name,
+            email: email,
+            password: hashedPassword, // Store hashed password
+            user_id: data.user.id
+          });
+
+        if (customerError) {
+          console.error('Customer creation error:', customerError);
+          setError('Account created but customer record failed. Please contact support.');
+          return;
+        }
+      }
+
+      setSuccess(true);
+      console.log('Sign up successful', data);
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Sign up error:', err);
@@ -78,6 +103,18 @@ export default function SignUpForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

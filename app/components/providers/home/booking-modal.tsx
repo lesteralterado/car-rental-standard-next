@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { FaTimes, FaCalendarAlt } from "react-icons/fa";
 import useAuth from "@/hooks/useAuth";
-import client from "@/api/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "react-hot-toast";
 import PaymentModal from "@/app/components/PaymentModal";
 import LoginForm from "@/app/components/LoginForm";
@@ -53,7 +53,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
 
   const checkCarAvailability = async (carId: string, pickupDate: string, returnDate: string): Promise<boolean> => {
     try {
-      const { data: conflictingBookings, error } = await client
+      const { data: conflictingBookings, error } = await supabase
         .from('bookings')
         .select('id')
         .eq('car_id', carId)
@@ -90,7 +90,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
 
     try {
       // Find the car by model
-      const { data: cars, error: carError } = await client
+      const { data: cars, error: carError } = await supabase
         .from('cars')
         .select('id, price_per_day, available')
         .eq('model', formData.car)
@@ -125,7 +125,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
       if (formData.driversLicense) {
         const fileExt = formData.driversLicense.name.split('.').pop();
         const fileName = `${(user as User).id}_${Date.now()}.${fileExt}`;
-        const { data: uploadData, error: uploadError } = await client.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('licenses')
           .upload(fileName, formData.driversLicense);
 
@@ -140,7 +140,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
 
       // Update user profile with license info
       if (formData.licenseNumber || licenseUrl) {
-        await client
+        await supabase
           .from('profiles')
           .update({
             drivers_license_number: formData.licenseNumber,
@@ -151,7 +151,7 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
 
       // Create booking as pending for admin approval
       const bookingStatus = isAvailable ? 'pending' : 'rejected';
-      const { error: bookingError } = await client
+      const { error: bookingError } = await supabase
         .from('bookings')
         .insert({
           user_id: (user as User).id,

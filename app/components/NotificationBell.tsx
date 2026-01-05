@@ -55,6 +55,28 @@ export default function NotificationBell() {
   useEffect(() => {
     if (user) {
       fetchNotifications();
+
+      // Subscribe to real-time notifications
+      const channel = client
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${(user as User).id}`,
+          },
+          (payload) => {
+            console.log('Notification change:', payload);
+            fetchNotifications(); // Refetch notifications on any change
+          }
+        )
+        .subscribe();
+
+      return () => {
+        client.removeChannel(channel);
+      };
     }
   }, [user, fetchNotifications]);
 

@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, use, useEffect } from 'react'
 import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, CheckCircle, Shield, Award, CreditCard } from 'lucide-react'
 import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
@@ -131,13 +131,16 @@ const mockCars = [
 ]
 
 interface CarDetailPageProps {
-   params: {
+   params: Promise<{
      id: string
-   }
+   }>
  }
 
 export default function CarDetailPage({ params }: CarDetailPageProps) {
+  const { id } = use(params)
   const { user } = useAuth()
+  const [car, setCar] = useState<Car | null>(null)
+  const [loadingCar, setLoadingCar] = useState(true)
   const [showBookingForm, setShowBookingForm] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [bookingStep, setBookingStep] = useState(1)
@@ -156,7 +159,38 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
     notes: ''
   })
 
-  const car = mockCars.find(c => c.id === params.id)
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        const response = await fetch(`/api/cars/${id}`)
+        if (response.ok) {
+          const carData = await response.json()
+          setCar(carData)
+        } else {
+          // Fallback to mock data if API fails
+          const mockCar = mockCars.find(c => c.id === id)
+          setCar(mockCar || null)
+        }
+      } catch (error) {
+        console.error('Error fetching car:', error)
+        // Fallback to mock data
+        const mockCar = mockCars.find(c => c.id === id)
+        setCar(mockCar || null)
+      } finally {
+        setLoadingCar(false)
+      }
+    }
+
+    fetchCar()
+  }, [id])
+
+  if (loadingCar) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Loading car details...</div>
+      </div>
+    )
+  }
 
   if (!car) {
     notFound()
@@ -193,18 +227,29 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
 
       // Note: License upload removed as per schema requirements
 
-      // Create booking request based on provided schema
+      // Get customer ID from customers table
+      const { data: customer, error: customerError } = await client
+        .from('customers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (customerError || !customer) {
+        console.error('Customer not found:', customerError)
+        toast.error("Customer record not found. Please contact support.")
+        return
+      }
+
+      // Create booking request - direct database insertion for simple schema
       const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          customer_id: parseInt((user as User).id.split('-')[0], 16), // hack to convert UUID to number
-          car_id: parseInt(car.id),
-          start_date: formData.pickupDate.split('T')[0],
-          end_date: formData.returnDate.split('T')[0],
+          customer_id: customer.id, // Use actual customer ID from database
+          car_id: parseInt(car.id), // Convert car id to bigint
+          start_date: formData.pickupDate.split('T')[0], // Date only
+          end_date: formData.returnDate.split('T')[0], // Date only
           status: 'pending'
         })
-        .select()
-        .single()
 
       if (bookingError) {
         console.error('Booking error:', bookingError)
@@ -434,38 +479,6 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <div className="mt-16">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Reviews</CardTitle>
-              <CardDescription>What our customers say about this vehicle</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {car.reviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{review.user}</span>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm text-gray-500">{review.date}</span>
-                    </div>
-                    <p className="text-gray-700">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Similar Cars */}
         <div className="mt-16">

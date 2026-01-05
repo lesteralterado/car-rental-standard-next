@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useState, useEffect } from "react";
-import client from "@/api/client";
+import { supabase } from "@/lib/supabase";
 
 const AuthContext = createContext(null);
 
@@ -11,9 +11,9 @@ const AuthProvider = ({ children }) => {
 
   const fetchProfile = async (userId) => {
     try {
-      const { data, error } = await client
+      const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('role, full_name, phone')
         .eq('id', userId)
         .single();
 
@@ -22,7 +22,17 @@ const AuthProvider = ({ children }) => {
         return null;
       }
 
-      return data;
+      // Map profiles data to profile format
+      if (data) {
+        return {
+          id: userId,
+          role: data.role,
+          full_name: data.full_name,
+          phone: data.phone,
+        };
+      }
+
+      return null;
     } catch (err) {
       console.error('Failed to fetch profile:', err);
       return null;
@@ -50,7 +60,7 @@ const AuthProvider = ({ children }) => {
     }
 
     const initializeAuth = async () => {
-      const { data: { session } } = await client.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
         setUser(session.user);
@@ -63,7 +73,7 @@ const AuthProvider = ({ children }) => {
 
     initializeAuth();
 
-    const { data: listener } = client.auth.onAuthStateChange(async (event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
         const userProfile = await fetchProfile(session.user.id);

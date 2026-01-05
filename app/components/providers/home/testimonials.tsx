@@ -5,8 +5,7 @@ import Image from "next/image";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
+import "swiper/swiper-bundle.css";
 
 const testimonials = [
   {
@@ -75,6 +74,7 @@ export default function Testimonials() {
                       alt={t.name}
                       width={60}
                       height={60}
+                      unoptimized
                       className="object-cover"
                     />
                   </div>

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import DatePicker from '@/app/components/ui/date-picker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import client from '@/api/client';
 import useAuth from '@/hooks/useAuth';
@@ -49,40 +50,19 @@ export default function InquiryForm() {
         .from('inquiries')
         .insert({
           user_id: (user as User).id,
-          car_id: formData.carId,
-          pickup_date: formData.pickupDate,
-          return_date: formData.returnDate,
-          pickup_location: formData.pickupLocation,
+          car_id: formData.carId || null,
+          pickup_date: formData.pickupDate || new Date().toISOString(),
+          return_date: formData.returnDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          pickup_location: formData.pickupLocation || 'TBD',
           dropoff_location: formData.dropoffLocation || null,
-          message: formData.message || null,
-        })
-        .select(`
-          *,
-          cars (
-            id,
-            name,
-            brand,
-            model
-          )
-        `)
-        .single();
+          message: formData.message,
+        });
 
       if (error) {
         console.error('Inquiry submission error:', error);
         toast.error('Failed to submit inquiry');
         return;
       }
-
-      // Create notification for user
-      await client
-        .from('notifications')
-        .insert({
-          user_id: (user as User).id,
-          type: 'inquiry_submitted',
-          title: 'Inquiry Submitted',
-          message: 'Your car availability inquiry has been submitted. We will get back to you soon.',
-          read: false
-        })
 
       toast.success('Inquiry submitted successfully! We will get back to you soon.');
       setFormData({
@@ -124,19 +104,19 @@ export default function InquiryForm() {
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-            Car Availability Inquiry
+            Car Inquiry
           </CardTitle>
           <CardDescription>
-            Check availability and get a quote for your desired car rental
+            Send us a message about your car rental needs
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="carId">Select Vehicle</Label>
+              <Label htmlFor="carId">Select Vehicle (Optional)</Label>
               <Select value={formData.carId} onValueChange={(value) => handleChange('carId', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a car" />
+                  <SelectValue placeholder="Choose a car (optional)" />
                 </SelectTrigger>
                 <SelectContent>
                   {cars.map((car) => (
@@ -150,20 +130,20 @@ export default function InquiryForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="pickupDate">Pickup Date & Time</Label>
+                <Label htmlFor="pickupDate">Pickup Date</Label>
                 <Input
                   id="pickupDate"
-                  type="datetime-local"
+                  type="date"
                   value={formData.pickupDate}
                   onChange={(e) => handleChange('pickupDate', e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="returnDate">Return Date & Time</Label>
+                <Label htmlFor="returnDate">Return Date</Label>
                 <Input
                   id="returnDate"
-                  type="datetime-local"
+                  type="date"
                   value={formData.returnDate}
                   onChange={(e) => handleChange('returnDate', e.target.value)}
                   required
@@ -176,8 +156,7 @@ export default function InquiryForm() {
                 <Label htmlFor="pickupLocation">Pickup Location</Label>
                 <Input
                   id="pickupLocation"
-                  type="text"
-                  placeholder="Enter pickup location"
+                  placeholder="e.g., Manila Airport"
                   value={formData.pickupLocation}
                   onChange={(e) => handleChange('pickupLocation', e.target.value)}
                   required
@@ -187,8 +166,7 @@ export default function InquiryForm() {
                 <Label htmlFor="dropoffLocation">Drop-off Location (Optional)</Label>
                 <Input
                   id="dropoffLocation"
-                  type="text"
-                  placeholder="Enter drop-off location"
+                  placeholder="e.g., Cebu Airport"
                   value={formData.dropoffLocation}
                   onChange={(e) => handleChange('dropoffLocation', e.target.value)}
                 />
@@ -196,13 +174,14 @@ export default function InquiryForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="message">Additional Message (Optional)</Label>
+              <Label htmlFor="message">Message</Label>
               <Textarea
                 id="message"
-                placeholder="Any special requirements or questions?"
+                placeholder="Tell us about your car rental needs..."
                 value={formData.message}
                 onChange={(e) => handleChange('message', e.target.value)}
-                rows={4}
+                rows={6}
+                required
               />
             </div>
 

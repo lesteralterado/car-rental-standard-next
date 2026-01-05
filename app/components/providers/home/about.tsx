@@ -36,7 +36,7 @@ export default function AboutSection() {
     visible: { opacity: 1, y: 0 }
   };
 
-  const titleWords = "About Three Brother's".split(" ");
+  const titleWords = "About Three Brothers'".split(" ");
 
   return (
     <section id="about" className="py-24 bg-gradient-to-br from-gray-50 to-white">
@@ -85,7 +85,7 @@ export default function AboutSection() {
 
             <motion.div className="space-y-4 text-muted-foreground" variants={containerVariants}>
               <motion.p variants={itemVariants} transition={{ duration: 0.6, delay: 0.2 }}>
-                Three Brother&quot;s is a premier luxury car rental service
+                Three Brothers' is a premier luxury car rental service
                 dedicated to providing exceptional vehicles and outstanding
                 customer experiences. Founded in 2010, we have built our
                 reputation on offering meticulously maintained luxury automobiles
@@ -98,7 +98,7 @@ export default function AboutSection() {
                 automotive engineering and design. Whether you need a
                 sophisticated sedan for a business trip, a luxury SUV for a family
                 vacation, or an exotic sports car for a special occasion, Three
-                Brother&quot;s has the perfect vehicle to match your needs.
+                Brothers' has the perfect vehicle to match your needs.
               </motion.p>
 
               <motion.p variants={itemVariants} transition={{ duration: 0.6, delay: 0.6 }}>
@@ -153,7 +153,7 @@ export default function AboutSection() {
               />
               <Image
                 src="https://cdn.pixabay.com/photo/2019/07/07/14/03/fiat-4322521_1280.jpg"
-                alt="About Three Brother's"
+                alt="About Three Brothers'"
                 width={800}
                 height={600}
                 className="w-full h-auto object-cover"
