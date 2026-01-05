@@ -85,7 +85,7 @@ export default function AboutSection() {
 
             <motion.div className="space-y-4 text-muted-foreground" variants={containerVariants}>
               <motion.p variants={itemVariants} transition={{ duration: 0.6, delay: 0.2 }}>
-                Three Brothers' is a premier luxury car rental service
+                Three Brothers&apos; is a premier luxury car rental service
                 dedicated to providing exceptional vehicles and outstanding
                 customer experiences. Founded in 2010, we have built our
                 reputation on offering meticulously maintained luxury automobiles
@@ -98,7 +98,7 @@ export default function AboutSection() {
                 automotive engineering and design. Whether you need a
                 sophisticated sedan for a business trip, a luxury SUV for a family
                 vacation, or an exotic sports car for a special occasion, Three
-                Brothers' has the perfect vehicle to match your needs.
+                Brothers&apos; has the perfect vehicle to match your needs.
               </motion.p>
 
               <motion.p variants={itemVariants} transition={{ duration: 0.6, delay: 0.6 }}>

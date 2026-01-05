@@ -5,9 +5,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, use, useEffect } from 'react'
 import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, CheckCircle, Shield, Award, CreditCard } from 'lucide-react'
-import { User } from '@supabase/supabase-js'
+// import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -220,10 +220,10 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
     setLoading(true)
     try {
       // Calculate total price
-      const pickupDate = new Date(formData.pickupDate)
-      const returnDate = new Date(formData.returnDate)
-      const days = Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24))
-      const totalPrice = days * car.pricePerDay
+      // const pickupDate = new Date(formData.pickupDate)
+      // const returnDate = new Date(formData.returnDate)
+      // const days = Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24))
+      // const totalPrice = days * car.pricePerDay
 
       // Note: License upload removed as per schema requirements
 
