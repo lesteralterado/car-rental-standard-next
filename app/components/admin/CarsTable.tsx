@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Car, Star, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Car as CarType } from '@/types/car'
+import Image from 'next/image'
 
 interface CarsTableProps {
   cars: CarType[]
@@ -79,10 +80,19 @@ const CarsTable: React.FC<CarsTableProps> = ({
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         {car.images && car.images.length > 0 && !imageErrors.has(car.id) ? (
-                          <img
+                        //   <img
+                        //     src={car.images[0]}
+                        //     alt={car.name}
+                        //     className="w-12 h-12 object-cover rounded"
+                        //     onError={() => handleImageError(car.id)}
+                        //   />
+                          <Image
                             src={car.images[0]}
                             alt={car.name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded"
+                            loading="lazy"
                             onError={() => handleImageError(car.id)}
                           />
                         ) : (

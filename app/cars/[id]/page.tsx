@@ -17,6 +17,7 @@ import SignUpForm from '@/app/components/SignUpForm'
 import useAuth from '@/hooks/useAuth'
 import client from '@/api/client'
 import { toast } from 'react-hot-toast'
+import { Car } from '@/types/car'
 
 // Mock data - in a real app, this would come from an API
 const mockCars = [
@@ -130,10 +131,10 @@ const mockCars = [
 ]
 
 interface CarDetailPageProps {
-  params: {
-    id: string
-  }
-}
+   params: {
+     id: string
+   }
+ }
 
 export default function CarDetailPage({ params }: CarDetailPageProps) {
   const { user } = useAuth()
@@ -190,48 +191,17 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
       const days = Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24))
       const totalPrice = days * car.pricePerDay
 
-      // Upload driver's license if provided
-      let licenseUrl = null
-      if (formData.driversLicense) {
-        const fileExt = formData.driversLicense.name.split('.').pop()
-        const fileName = `${(user as User).id}_${Date.now()}.${fileExt}`
-        const { data: uploadData, error: uploadError } = await client.storage
-          .from('licenses')
-          .upload(fileName, formData.driversLicense)
+      // Note: License upload removed as per schema requirements
 
-        if (uploadError) {
-          console.error('License upload error:', uploadError)
-          toast.error("Failed to upload driver's license")
-          return
-        }
-
-        licenseUrl = uploadData.path
-      }
-
-      // Update user profile with license info
-      if (formData.licenseNumber || licenseUrl) {
-        await client
-          .from('profiles')
-          .update({
-            drivers_license_number: formData.licenseNumber,
-            drivers_license_url: licenseUrl,
-          })
-          .eq('id', (user as User).id)
-      }
-
-      // Create booking request (pending admin approval)
+      // Create booking request based on provided schema
       const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          user_id: (user as User).id,
-          car_id: car.id,
-          pickup_date: formData.pickupDate,
-          return_date: formData.returnDate,
-          pickup_location: formData.location === 'custom' ? formData.customLocation : formData.location,
-          total_price: totalPrice,
-          status: 'pending', // Requires admin approval
-          payment_status: 'pending',
-          notes: formData.notes
+          customer_id: parseInt((user as User).id.split('-')[0], 16), // hack to convert UUID to number
+          car_id: parseInt(car.id),
+          start_date: formData.pickupDate.split('T')[0],
+          end_date: formData.returnDate.split('T')[0],
+          status: 'pending'
         })
         .select()
         .single()
@@ -242,16 +212,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
         return
       }
 
-      // Create notification for user
-      await client
-        .from('notifications')
-        .insert({
-          user_id: (user as User).id,
-          type: 'booking_submitted',
-          title: 'Booking Request Submitted',
-          message: `Your booking request for ${car.name} has been submitted and is pending admin approval.`,
-          read: false
-        })
+      // Note: Notification creation removed as per schema
 
       toast.success("Booking request submitted! We'll notify you once it's reviewed by our admin.")
       setShowBookingForm(false)

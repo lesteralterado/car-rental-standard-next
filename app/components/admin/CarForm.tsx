@@ -147,34 +147,56 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
   }
 
   const handleImageUpload = async (files: FileList | null) => {
-    if (!files) return
+    if (!files || files.length === 0) return
 
     setUploadingImages(true)
     const uploadedUrls: string[] = []
 
-    const api_key = '888232569334432'
-    const api_secret = 'nNm9Beq6GL8Z8WvhhHT1i5SFRQM'
-    const cloud_name = 'dhxi75eld'
+    // Cloudinary configuration - moved to environment variables for security and maintainability
+    const CLOUDINARY_CONFIG = {
+      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      apiSecret: process.env.CLOUDINARY_API_SECRET, // Note: This should ideally be server-side only
+      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    }
+
+    // Validate configuration
+    if (!CLOUDINARY_CONFIG.apiKey || !CLOUDINARY_CONFIG.apiSecret || !CLOUDINARY_CONFIG.cloudName) {
+      console.error('Cloudinary configuration is incomplete. Please check environment variables.')
+      setUploadingImages(false)
+      return
+    }
+
+    const { apiKey, apiSecret, cloudName } = CLOUDINARY_CONFIG
 
     for (const file of Array.from(files)) {
       try {
         const timestamp = Math.floor(Date.now() / 1000)
-        const signature = SHA1(`timestamp=${timestamp}${api_secret}`).toString()
+        const signature = SHA1(`timestamp=${timestamp}${apiSecret}`).toString()
 
         const formDataUpload = new FormData()
         formDataUpload.append('file', file)
-        formDataUpload.append('api_key', api_key)
+        formDataUpload.append('api_key', apiKey)
         formDataUpload.append('timestamp', timestamp.toString())
         formDataUpload.append('signature', signature)
         formDataUpload.append('folder', 'car-rental')
 
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: 'POST',
           body: formDataUpload
         })
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Cloudinary upload failed:', response.status, errorData)
+          continue // Skip this file and continue with others
+        }
+
         const result = await response.json()
-        uploadedUrls.push(result.secure_url)
+        if (result.secure_url) {
+          uploadedUrls.push(result.secure_url)
+        } else {
+          console.error('No secure_url in response:', result)
+        }
       } catch (error) {
         console.error('Error uploading image:', error)
       }

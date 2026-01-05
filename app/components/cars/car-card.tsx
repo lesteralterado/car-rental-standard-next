@@ -66,7 +66,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col space-y-2">
                   {car.featured && (
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                    <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-semibold">
                       Featured
                     </span>
                   )}
@@ -198,7 +198,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col space-y-2">
             {car.featured && (
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                 Featured
               </span>
             )}

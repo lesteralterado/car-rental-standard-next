@@ -7,28 +7,28 @@ interface InquiryUpdateData {
 }
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { data: { user } } = await client.auth.getUser();
+   request: NextRequest,
+   { params }: { params: Promise<{ id: string }> }
+ ) {
+   try {
+     const { data: { user } } = await client.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+     if (!user) {
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+     }
 
-    // Get user profile to check role
-    const { data: profile, error: profileError } = await client
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+     // Get user profile to check role
+     const { data: profile, error: profileError } = await client
+       .from('profiles')
+       .select('role')
+       .eq('id', user.id)
+       .single();
 
-    if (profileError) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
-    }
+     if (profileError) {
+       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+     }
 
-    const inquiryId = params.id;
+     const { id: inquiryId } = await params;
 
     let query = client.from('inquiries').select(`
       *,
@@ -61,28 +61,28 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { data: { user } } = await client.auth.getUser();
+   request: NextRequest,
+   { params }: { params: Promise<{ id: string }> }
+ ) {
+   try {
+     const { data: { user } } = await client.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+     if (!user) {
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+     }
 
-    // Only admins can update inquiries
-    const { data: profile, error: profileError } = await client
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+     // Only admins can update inquiries
+     const { data: profile, error: profileError } = await client
+       .from('profiles')
+       .select('role')
+       .eq('id', user.id)
+       .single();
 
-    if (profileError || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+     if (profileError || profile.role !== 'admin') {
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+     }
 
-    const inquiryId = params.id;
+     const { id: inquiryId } = await params;
     const body = await request.json();
     const { status, admin_response } = body;
 

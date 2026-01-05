@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import client from '@/api/client'
@@ -43,17 +43,7 @@ export default function AdminReportsPage() {
   const [totalBookings, setTotalBookings] = useState(0)
   const [completedBookings, setCompletedBookings] = useState(0)
 
-  useEffect(() => {
-    if (!loading) {
-      // if (!user || !isAdmin) {
-      //   router.push('/')
-      //   return
-      // }
-      fetchReports()
-    }
-  }, [user, isAdmin, loading, router])
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       // Fetch all bookings for reports
       const { data: bookingsData, error: bookingsError } = await client
@@ -95,7 +85,17 @@ export default function AdminReportsPage() {
     } finally {
       setLoadingReports(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!loading) {
+      // if (!user || !isAdmin) {
+      //   router.push('/')
+      //   return
+      // }
+      fetchReports()
+    }
+  }, [user, isAdmin, loading, router, fetchReports])
 
   const generateMonthlyRevenueData = (bookings: BookingReport[]): RevenueData[] => {
     const monthlyMap = new Map<string, { revenue: number; bookings: number }>()

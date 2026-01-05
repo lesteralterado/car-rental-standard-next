@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -202,7 +202,7 @@ export default function AdminCarsPage() {
           <DialogHeader>
             <DialogTitle>Delete Car</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{carToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{carToDelete?.name}&quot;? This action cannot be undone.
               {deleteError && <p className="text-red-600 mt-2">{deleteError}</p>}
             </DialogDescription>
           </DialogHeader>

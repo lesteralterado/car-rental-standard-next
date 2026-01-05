@@ -22,11 +22,11 @@ interface RecentBooking {
   status: string;
   profiles: {
     full_name: string;
-  }[];
+  };
   cars: {
     make: string;
     model: string;
-  }[];
+  };
 }
 
 export default function AdminDashboard() {
@@ -56,10 +56,10 @@ export default function AdminDashboard() {
           id,
           created_at,
           status,
-          profiles!inner (
+          profiles:user_id (
             full_name
           ),
-          cars!inner (
+          cars:car_id (
             model,
             make
           )
@@ -255,7 +255,7 @@ export default function AdminDashboard() {
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <div>
                           <p className="font-medium">
-                            {booking.cars?.[0]?.make} {booking.cars?.[0]?.model} - {booking.profiles?.[0]?.full_name}
+                            {booking.cars?.make} {booking.cars?.model} - {booking.profiles?.full_name}
                           </p>
                           <p className="text-sm text-gray-500">
                             {new Date(booking.created_at).toLocaleDateString()}
