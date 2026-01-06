@@ -64,7 +64,12 @@ export default function AdminInquiriesPage() {
     setLoadingInquiries(true)
     setError(null)
     try {
-      const response = await fetch('/api/inquiries')
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/inquiries', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch inquiries')
       }

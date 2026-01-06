@@ -1,19 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import client from '@/api/client';
+import jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(request: NextRequest) {
   try {
-    const { data: { user } } = await client.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
+    const token = authHeader.substring(7);
+
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
     // Get user profile to check role
-    const { data: profile, error: profileError } = await client
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', decoded.userId)
       .single();
 
     if (profileError) {
@@ -26,13 +38,13 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Get customer_id for filtering
-    const { data: customer } = await client
+    const { data: customer } = await supabase
       .from('customers')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', decoded.userId)
       .single();
 
-    let query = client.from('bookings').select(`
+    let query = supabase.from('bookings').select(`
       *,
       customers:customer_id (
         full_name,
@@ -76,11 +88,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { data: { user } } = await client.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
+
+    const token = authHeader.substring(7);
+
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
 
     const body = await request.json();
     const {
@@ -99,10 +115,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get customer_id
-    const { data: customer, error: customerError } = await client
+    const { data: customer, error: customerError } = await supabase
       .from('customers')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', decoded.userId)
       .single();
 
     if (customerError || !customer) {
@@ -110,7 +126,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if car exists and is available
-    const { data: car, error: carError } = await client
+    const { data: car, error: carError } = await supabase
       .from('cars')
       .select('id, available, availability')
       .eq('id', car_id)
@@ -125,13 +141,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check availability for the selected dates
-    const { data: conflictingBookings, error: availabilityError } = await client
+    const { data: conflictingBookings, error: availabilityError } = await supabase
       .from('bookings')
       .select('id')
       .eq('car_id', car_id)
       .neq('status', 'rejected')
       .neq('status', 'cancelled')
-      .or(`and(start_date.lte.${end_date},end_date.gte.${start_date})`);
+      .or(`and(pickup_date.lte.${end_date},return_date.gte.${start_date})`);
 
     if (availabilityError) {
       console.error('Availability check error:', availabilityError);
@@ -145,13 +161,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create booking
-    const { data: booking, error: bookingError } = await client
+    const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert({
         customer_id: customer.id,
         car_id,
-        start_date,
-        end_date,
+        pickup_date: start_date,
+        return_date: end_date,
         pickup_location,
         dropoff_location: dropoff_location || null,
         total_price,
