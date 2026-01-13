@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from './components/context/AuthProvider'
-import Chatbot from './components/Chatbot'
+import ChatbotWrapper from './components/ChatbotWrapper'
 // import Header from './components/providers/layout/header'
 // import Footer from './components/providers/layout/footer'
 // import AdminSidebar from './components/AdminSidebar'
@@ -101,8 +101,8 @@ export default function RootLayout({
               <LayoutContent>
                 {children}
               </LayoutContent>
+              <ChatbotWrapper />
             </AuthProvider>
-            <Chatbot />
           </div>
           <Toaster
             position="top-center"
