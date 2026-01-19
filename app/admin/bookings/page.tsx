@@ -7,64 +7,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import AdminSidebar from '@/app/components/AdminSidebar';
+import AdminRoute from '@/app/components/AdminRoute';
 
 interface Booking {
   id: string;
-  user_id: string;
+  customer_id: string;
   car_id: string;
-  pickup_date: string;
-  return_date: string;
+  start_date: string;
+  end_date: string;
   pickup_location: string;
   status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
   total_price: number;
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   drivers_license_verified: boolean;
   created_at: string;
-  profiles: {
-    full_name: string;
-    phone: string;
-  };
-  cars: {
-    model: string;
-    make: string;
-    year: number;
-  };
 }
 
 export default function AdminBookings() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
 
   useEffect(() => {
-    if (!loading && isAdmin) {
+    console.log('User in admin bookings:', user);
+    if (user) {
       fetchBookings();
     }
-  }, [loading, isAdmin]);
+  }, [user]);
 
   const fetchBookings = async () => {
+    console.log('Starting fetch bookings');
     try {
       const { data, error } = await client
         .from('bookings')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            phone
-          ),
-          cars:car_id (
-            model,
-            make,
-            year
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .select(`*`);
 
       if (error) throw error;
+      console.log('Fetched bookings data:', data);
       setBookings(data || []);
+      console.log('Pending bookings count:', data?.filter(b => b.status === 'pending').length || 0);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
@@ -105,28 +88,9 @@ export default function AdminBookings() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  // if (!user || !isAdmin) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-lg text-red-500">Access denied. Admin privileges required.</div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <AdminRoute>
+      <div className="p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
             <p className="text-gray-600 mt-2">Review and manage customer bookings</p>
@@ -162,9 +126,8 @@ export default function AdminBookings() {
                         <div key={booking.id} className="border rounded-lg p-4 bg-white">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h3 className="font-semibold">{booking.cars?.make} {booking.cars?.model} {booking.cars?.year}</h3>
-                              <p className="text-sm text-gray-600">Customer: {booking.profiles?.full_name}</p>
-                              <p className="text-sm text-gray-600">Phone: {booking.profiles?.phone}</p>
+                              <h3 className="font-semibold">Car ID: {booking.car_id}</h3>
+                              <p className="text-sm text-gray-600">Customer ID: {booking.customer_id}</p>
                             </div>
                             {getStatusBadge(booking.status)}
                           </div>
@@ -172,11 +135,11 @@ export default function AdminBookings() {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                             <div>
                               <span className="font-medium">Pickup:</span>
-                              <p>{new Date(booking.pickup_date).toLocaleDateString()}</p>
+                              <p>{new Date(booking.start_date).toLocaleDateString()}</p>
                             </div>
                             <div>
                               <span className="font-medium">Return:</span>
-                              <p>{new Date(booking.return_date).toLocaleDateString()}</p>
+                              <p>{new Date(booking.end_date).toLocaleDateString()}</p>
                             </div>
                             <div>
                               <span className="font-medium">Location:</span>
@@ -217,8 +180,8 @@ export default function AdminBookings() {
                       <div key={booking.id} className="border rounded-lg p-4 bg-white">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-semibold">{booking.cars?.make} {booking.cars?.model}</h3>
-                            <p className="text-sm text-gray-600">{booking.profiles?.full_name}</p>
+                            <h3 className="font-semibold">Car ID: {booking.car_id}</h3>
+                            <p className="text-sm text-gray-600">Customer ID: {booking.customer_id}</p>
                           </div>
                           {getStatusBadge(booking.status)}
                         </div>
@@ -233,8 +196,8 @@ export default function AdminBookings() {
                       <div key={booking.id} className="border rounded-lg p-4 bg-white">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-semibold">{booking.cars?.make} {booking.cars?.model}</h3>
-                            <p className="text-sm text-gray-600">{booking.profiles?.full_name}</p>
+                            <h3 className="font-semibold">Car ID: {booking.car_id}</h3>
+                            <p className="text-sm text-gray-600">Customer ID: {booking.customer_id}</p>
                           </div>
                           {getStatusBadge(booking.status)}
                         </div>
@@ -247,8 +210,8 @@ export default function AdminBookings() {
                     <div key={booking.id} className="border rounded-lg p-4 bg-white">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-semibold">{booking.cars?.make} {booking.cars?.model}</h3>
-                          <p className="text-sm text-gray-600">{booking.profiles?.full_name}</p>
+                          <h3 className="font-semibold">Car ID: {booking.car_id}</h3>
+                          <p className="text-sm text-gray-600">Customer ID: {booking.customer_id}</p>
                         </div>
                         {getStatusBadge(booking.status)}
                       </div>
@@ -258,8 +221,7 @@ export default function AdminBookings() {
               </Tabs>
             </CardContent>
           </Card>
-        </div>
       </div>
-    </div>
+    </AdminRoute>
   );
 }

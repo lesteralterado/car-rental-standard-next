@@ -1,6 +1,5 @@
 'use client';
 import { createContext, useState, useEffect } from "react";
-import client from "@/api/client";
 
 const AuthContext = createContext(null);
 
@@ -9,22 +8,61 @@ const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId) => {
+  const login = async (credentials) => {
     try {
-      const { data, error } = await client
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('Error fetching profile:', error);
-        return null;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Login failed');
       }
 
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      setProfile(data.user);
       return data;
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      localStorage.removeItem('token');
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile');
+      }
+
+      const data = await response.json();
+      return data.user;
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
       return null;
     }
   };
@@ -36,10 +74,10 @@ const AuthProvider = ({ children }) => {
       try {
         const user = JSON.parse(demoUser);
         setUser(user);
-        // For demo user, create a mock profile with client role
+        // For demo user, create a mock profile with the correct role
         setProfile({
           id: user.id,
-          role: 'client',
+          role: user.role || 'client',
           full_name: user.user_metadata?.name || 'Demo User'
         });
         setLoading(false);
@@ -50,52 +88,21 @@ const AuthProvider = ({ children }) => {
     }
 
     const initializeAuth = async () => {
-      const { data: { session } } = await client.auth.getSession();
-
-      if (session?.user) {
-        setUser(session.user);
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
+      const token = localStorage.getItem('token');
+      if (token) {
+        const userProfile = await fetchProfile();
+        if (userProfile) {
+          setUser(userProfile);
+          setProfile(userProfile);
+        } else {
+          localStorage.removeItem('token');
+        }
       }
-
       setLoading(false);
     };
 
     initializeAuth();
-
-    const { data: listener } = client.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
   }, []);
-
-  // const login = async (credentials) => {
-  //   try {
-  //     const response = await client.post('/auth/login', credentials);
-  //     setUser(response.data);
-  //   } catch (error) {
-  //     console.error('Login failed:', error);
-  //   }
-  // };
-
-  // const logout = async () => {
-  //   try {
-  //     await client.post('/auth/logout');
-  //     setUser(null);
-  //   } catch (error) {
-  //     console.error('Logout failed:', error);
-  //   }
-  // };
 
   return (
     <AuthContext.Provider
@@ -104,8 +111,8 @@ const AuthProvider = ({ children }) => {
         profile,
         loading,
         isAdmin: profile?.role === 'admin',
-        // login,
-        // logout
+        login,
+        logout
       }}>
         {children}
     </AuthContext.Provider>

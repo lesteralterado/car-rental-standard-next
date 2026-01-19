@@ -12,7 +12,9 @@ import {
   Bell,
   Menu,
   X,
-  Shield
+  Shield,
+  MessageSquare,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +25,9 @@ interface AdminSidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Bookings', href: '/admin/bookings', icon: FileText },
+  { name: 'Inquiries', href: '/admin/inquiries', icon: MessageSquare },
   { name: 'Cars', href: '/admin/cars', icon: Car },
+  { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Admins', href: '/admin/admins', icon: Shield },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },

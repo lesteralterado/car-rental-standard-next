@@ -1,13 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import client from '@/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+<<<<<<< HEAD
 import { Car, Users, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
 import Admin from '@/app/components/AdminSidebar';
+=======
+import { Car, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
+import AdminRoute from '@/app/components/AdminRoute';
+>>>>>>> 55affc95dd828628e484348e3bd429e6e50ee011
 
 interface DashboardStats {
   totalBookings: number;
@@ -30,8 +35,8 @@ interface RecentBooking {
 }
 
 export default function AdminDashboard() {
-  const { user, profile, loading, isAdmin } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
+  // const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     pendingBookings: 0,
@@ -42,15 +47,11 @@ export default function AdminDashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      // if (!user || !isAdmin) {
-      //   router.push('/');
-      //   return;
-      // }
+    if (user) {
       fetchStats();
       fetchRecentBookings();
     }
-  }, [user, isAdmin, loading, router]);
+  }, [user]);
 
   const fetchRecentBookings = async () => {
     try {
@@ -60,10 +61,10 @@ export default function AdminDashboard() {
           id,
           created_at,
           status,
-          profiles!inner (
+          profiles:user_id (
             full_name
           ),
-          cars!inner (
+          cars:car_id (
             model,
             make
           )
@@ -119,28 +120,9 @@ export default function AdminDashboard() {
   };
 
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  // if (!isAdmin) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-lg text-red-500">Access denied. Admin privileges required.</div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar />
-
-      <div className="flex-1">
-        <div className="p-6">
+    <AdminRoute>
+      <div className="p-6">
           <div className="mb-8 flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
@@ -278,7 +260,7 @@ export default function AdminDashboard() {
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <div>
                           <p className="font-medium">
-                            {booking.cars?.[0]?.make} {booking.cars?.[0]?.model} - {booking.profiles?.[0]?.full_name}
+                            {booking.cars[0]?.make} {booking.cars[0]?.model} - {booking.profiles[0]?.full_name}
                           </p>
                           <p className="text-sm text-gray-500">
                             {new Date(booking.created_at).toLocaleDateString()}
@@ -303,10 +285,10 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
       </div>
-    </div>
+    </AdminRoute>
   );
 }
+

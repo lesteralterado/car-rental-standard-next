@@ -3,11 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Star, Users, Settings, Fuel, Heart, MapPin, Calendar, Clock } from 'lucide-react'
+import { Star, Users, Settings, Fuel, Heart, MapPin } from 'lucide-react'
 import type { Car } from '@/types/car'
-import useAuth from '@/hooks/useAuth'
+// import useAuth from '@/hooks/useAuth'
 import BookingModal from '@/app/components/providers/home/booking-modal'
-import { toast } from 'react-hot-toast'
+// import { toast } from 'react-hot-toast'
 
 interface CarCardProps {
   car: Car
@@ -15,10 +15,12 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car, view = 'grid' }: CarCardProps) {
-  const { user } = useAuth()
+  // const { user } = useAuth()
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+
+  console.log(`CarCard for ${car.name}: images =`, car.images, `first image = "${car.images[0]}"`)
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -49,7 +51,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
             {/* Image */}
             <div className="lg:w-1/3">
               <div className="relative aspect-video rounded-lg overflow-hidden">
-                {!imageError ? (
+                {!imageError && car.images[0] && car.images[0].trim() ? (
                   <Image
                     src={car.images[0]}
                     alt={car.name}
@@ -66,7 +68,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col space-y-2">
                   {car.featured && (
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                    <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-semibold">
                       Featured
                     </span>
                   )}
@@ -181,7 +183,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
       <div className="car-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200">
         {/* Image */}
         <div className="relative aspect-video">
-          {!imageError ? (
+          {!imageError && car.images[0] && car.images[0].trim() ? (
             <Image
               src={car.images[0]}
               alt={car.name}
@@ -198,7 +200,7 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col space-y-2">
             {car.featured && (
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                 Featured
               </span>
             )}

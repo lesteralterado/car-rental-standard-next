@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import useAuth from '@/hooks/useAuth';
 import client from '@/api/client';
+import { User } from '@supabase/supabase-js';
 
 interface Notification {
   id: string;
@@ -23,20 +24,14 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
 
     try {
       const { data, error } = await client
         .from('notifications')
         .select('*')
-        .eq('user_id', (user as any).id)
+        .eq('user_id', (user as User).id)
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -55,7 +50,35 @@ export default function NotificationBell() {
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+
+      // Subscribe to real-time notifications
+      const channel = client
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${(user as User).id}`,
+          },
+          (payload) => {
+            console.log('Notification change:', payload);
+            fetchNotifications(); // Refetch notifications on any change
+          }
+        )
+        .subscribe();
+
+      return () => {
+        client.removeChannel(channel);
+      };
+    }
+  }, [user, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     try {

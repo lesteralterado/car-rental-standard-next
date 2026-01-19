@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+// import { cookies } from 'next/headers'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const transformedCars = cars.map(car => ({
       id: car.id,
       name: car.name,
-      brand: car.brand,
+      brand: car.make,
       model: car.model,
       year: car.year,
       category: car.category,
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       images: car.images || [],
       features: car.features || [],
       specifications: car.specifications || {},
-      availability: car.availability || { available: true, locations: [], unavailableDates: [] },
+      availability: { available: car.availability?.available ?? true, locations: car.availability?.locations || [], unavailableDates: car.availability?.unavailableDates || [] },
       rating: car.rating || 0,
       reviewCount: car.review_count || 0,
       description: car.description,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Transform the data to match database schema
     const carData = {
       name: body.name,
-      brand: body.brand,
+      make: body.brand, // map brand to make
       model: body.model,
       year: parseInt(body.year),
       category: body.category,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       images: body.images || [],
       features: body.features || [],
       specifications: body.specifications || {},
-      availability: body.availability || { available: true, locations: [], unavailableDates: [] },
+      availability: { available: body.availability?.available ?? true, locations: body.availability?.locations || [], unavailableDates: body.availability?.unavailableDates || [] },
       rating: body.rating || 0,
       review_count: body.reviewCount || 0,
       description: body.description || '',
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.brand,
+      brand: data.make,
       model: data.model,
       year: data.year,
       category: data.category,
@@ -120,10 +120,10 @@ export async function POST(request: NextRequest) {
       images: data.images || [],
       features: data.features || [],
       specifications: data.specifications || {},
-      availability: data.availability || { available: true, locations: [], unavailableDates: [] },
+      availability: { available: data.availability?.available ?? true, locations: data.availability?.locations || [], unavailableDates: data.availability?.unavailableDates || [] },
       rating: data.rating || 0,
       reviewCount: data.review_count || 0,
-      description: data.description,
+      description: data.description || '',
       popular: data.popular || false,
       featured: data.featured || false
     }

@@ -3,10 +3,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, Calendar, CheckCircle, Shield, Award, ChevronRight, ChevronLeft, Upload, CreditCard } from 'lucide-react'
+import { useState, use, useEffect } from 'react'
+import { ArrowLeft, Star, Users, Settings, Fuel, MapPin, CheckCircle, Shield, Award, CreditCard } from 'lucide-react'
+// import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +17,7 @@ import SignUpForm from '@/app/components/SignUpForm'
 import useAuth from '@/hooks/useAuth'
 import client from '@/api/client'
 import { toast } from 'react-hot-toast'
+import { Car } from '@/types/car'
 
 // Mock data - in a real app, this would come from an API
 const mockCars = [
@@ -129,13 +131,16 @@ const mockCars = [
 ]
 
 interface CarDetailPageProps {
-  params: {
-    id: string
-  }
-}
+   params: Promise<{
+     id: string
+   }>
+ }
 
 export default function CarDetailPage({ params }: CarDetailPageProps) {
-  const { user, profile } = useAuth()
+  const { id } = use(params)
+  const { user } = useAuth()
+  const [car, setCar] = useState<Car | null>(null)
+  const [loadingCar, setLoadingCar] = useState(true)
   const [showBookingForm, setShowBookingForm] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [bookingStep, setBookingStep] = useState(1)
@@ -154,7 +159,38 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
     notes: ''
   })
 
-  const car = mockCars.find(c => c.id === params.id)
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        const response = await fetch(`/api/cars/${id}`)
+        if (response.ok) {
+          const carData = await response.json()
+          setCar(carData)
+        } else {
+          // Fallback to mock data if API fails
+          const mockCar = mockCars.find(c => c.id === id)
+          setCar(mockCar || null)
+        }
+      } catch (error) {
+        console.error('Error fetching car:', error)
+        // Fallback to mock data
+        const mockCar = mockCars.find(c => c.id === id)
+        setCar(mockCar || null)
+      } finally {
+        setLoadingCar(false)
+      }
+    }
+
+    fetchCar()
+  }, [id])
+
+  if (loadingCar) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg">Loading car details...</div>
+      </div>
+    )
+  }
 
   if (!car) {
     notFound()
@@ -184,62 +220,44 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
     setLoading(true)
     try {
       // Calculate total price
-      const pickupDate = new Date(formData.pickupDate)
-      const returnDate = new Date(formData.returnDate)
-      const days = Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24))
-      const totalPrice = days * car.pricePerDay
+      // const pickupDate = new Date(formData.pickupDate)
+      // const returnDate = new Date(formData.returnDate)
+      // const days = Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24))
+      // const totalPrice = days * car.pricePerDay
 
-      // Upload driver's license if provided
-      let licenseUrl = null
-      if (formData.driversLicense) {
-        const fileExt = formData.driversLicense.name.split('.').pop()
-        const fileName = `${(user as any).id}_${Date.now()}.${fileExt}`
-        const { data: uploadData, error: uploadError } = await client.storage
-          .from('licenses')
-          .upload(fileName, formData.driversLicense)
+      // Note: License upload removed as per schema requirements
 
-        if (uploadError) {
-          console.error('License upload error:', uploadError)
-          toast.error("Failed to upload driver's license")
-          return
-        }
+      // Get customer ID from customers table
+      const { data: customer, error: customerError } = await client
+        .from('customers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
 
-        licenseUrl = uploadData.path
+      if (customerError || !customer) {
+        console.error('Customer not found:', customerError)
+        toast.error("Customer record not found. Please contact support.")
+        return
       }
 
-      // Update user profile with license info
-      if (formData.licenseNumber || licenseUrl) {
-        await client
-          .from('profiles')
-          .update({
-            drivers_license_number: formData.licenseNumber,
-            drivers_license_url: licenseUrl,
-          })
-          .eq('id', (user as any).id)
-      }
-
-      // Create booking request (pending admin approval)
-      const { data: booking, error: bookingError } = await client
+      // Create booking request - direct database insertion for simple schema
+      const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          user_id: (user as any).id,
-          car_id: car.id,
-          pickup_date: formData.pickupDate,
-          return_date: formData.returnDate,
-          pickup_location: formData.location === 'custom' ? formData.customLocation : formData.location,
-          total_price: totalPrice,
-          status: 'pending', // Requires admin approval
-          payment_status: 'pending',
-          notes: formData.notes
+          customer_id: customer.id, // Use actual customer ID from database
+          car_id: parseInt(car.id), // Convert car id to bigint
+          start_date: formData.pickupDate.split('T')[0], // Date only
+          end_date: formData.returnDate.split('T')[0], // Date only
+          status: 'pending'
         })
-        .select()
-        .single()
 
       if (bookingError) {
         console.error('Booking error:', bookingError)
         toast.error("Failed to submit booking request")
         return
       }
+
+      // Note: Notification creation removed as per schema
 
       toast.success("Booking request submitted! We'll notify you once it's reviewed by our admin.")
       setShowBookingForm(false)
@@ -461,38 +479,6 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <div className="mt-16">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Reviews</CardTitle>
-              <CardDescription>What our customers say about this vehicle</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {car.reviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{review.user}</span>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm text-gray-500">{review.date}</span>
-                    </div>
-                    <p className="text-gray-700">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Similar Cars */}
         <div className="mt-16">
@@ -502,7 +488,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
               .filter(c => c.id !== car.id && c.category === car.category)
               .slice(0, 3)
               .map((similarCar) => (
-                <CarCard key={similarCar.id} car={similarCar as any} />
+                <CarCard key={similarCar.id} car={similarCar as Car} />
               ))}
           </div>
         </div>
@@ -574,7 +560,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                         onClick={() => setAuthMode('signup')}
                         className="text-blue-500 hover:underline"
                       >
-                        Don't have an account? Sign up
+                        Don&quot;t have an account? Sign up
                       </button>
                     </div>
                   ) : (
@@ -712,7 +698,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                   {bookingStep === 3 && (
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="licenseNumber">Driver's License Number</Label>
+                        <Label htmlFor="licenseNumber">Driver&quot;s License Number</Label>
                         <Input
                           id="licenseNumber"
                           name="licenseNumber"
@@ -723,7 +709,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="driversLicense">Upload Driver's License</Label>
+                        <Label htmlFor="driversLicense">Upload Driver&quot;s License</Label>
                         <Input
                           id="driversLicense"
                           name="driversLicense"
@@ -735,7 +721,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                           }}
                           required
                         />
-                        <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver's license</p>
+                        <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver&quot;s license</p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h4 className="font-medium mb-2">Payment Information</h4>
@@ -791,7 +777,7 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
                       <div className="bg-yellow-50 p-4 rounded-lg">
                         <p className="text-sm text-yellow-800">
                           <strong>Note:</strong> Your booking request will be reviewed by our admin team.
-                          You'll receive a notification once it's approved and payment details will be provided.
+                          You&quot;ll receive a notification once it&quot;s approved and payment details will be provided.
                         </p>
                       </div>
                     </div>

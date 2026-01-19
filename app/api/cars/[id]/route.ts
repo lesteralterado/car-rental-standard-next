@@ -6,16 +6,39 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+interface CarUpdateData {
+  name?: string
+  make?: string
+  model?: string
+  year?: number
+  category?: string
+  price_per_day?: number
+  price_per_week?: number | null
+  price_per_month?: number | null
+  images?: string[]
+  features?: string[]
+  specifications?: object
+  available?: boolean
+  availability?: string
+  rating?: number
+  review_count?: number
+  description?: string
+  popular?: boolean
+  featured?: boolean
+  updated_at?: string
+}
+
 // GET /api/cars/[id] - Get a specific car
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const { data, error } = await supabase
       .from('cars')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (error) {
@@ -30,7 +53,7 @@ export async function GET(
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.brand,
+      brand: data.make,
       model: data.model,
       year: data.year,
       category: data.category,
@@ -38,12 +61,12 @@ export async function GET(
       pricePerWeek: data.price_per_week,
       pricePerMonth: data.price_per_month,
       images: data.images || [],
-      features: data.features || [],
+      features: [],
       specifications: data.specifications || {},
-      availability: data.availability || { available: true, locations: [], unavailableDates: [] },
+      availability: { available: data.available !== false, locations: [], unavailableDates: [] },
       rating: data.rating || 0,
       reviewCount: data.review_count || 0,
-      description: data.description,
+      description: '',
       popular: data.popular || false,
       featured: data.featured || false
     }
@@ -58,15 +81,16 @@ export async function GET(
 // PUT /api/cars/[id] - Update a car
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
+    const { id } = await params
 
     // Transform the data to match database schema
-    const carData: any = {
+    const carData: CarUpdateData = {
       name: body.name,
-      brand: body.brand,
+      make: body.brand,
       model: body.model,
       year: body.year ? parseInt(body.year) : undefined,
       category: body.category,
@@ -76,7 +100,8 @@ export async function PUT(
       images: body.images,
       features: body.features,
       specifications: body.specifications,
-      availability: body.availability,
+      available: body.availability?.available,
+      availability: body.availability?.available ? 'available' : 'unavailable',
       rating: body.rating,
       review_count: body.reviewCount,
       description: body.description,
@@ -87,15 +112,16 @@ export async function PUT(
 
     // Remove undefined values
     Object.keys(carData).forEach(key => {
-      if (carData[key] === undefined) {
-        delete carData[key]
+      const k = key as keyof CarUpdateData
+      if (carData[k] === undefined) {
+        delete carData[k]
       }
     })
 
     const { data, error } = await supabase
       .from('cars')
       .update(carData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -111,7 +137,7 @@ export async function PUT(
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.brand,
+      brand: data.make,
       model: data.model,
       year: data.year,
       category: data.category,
@@ -121,7 +147,7 @@ export async function PUT(
       images: data.images || [],
       features: data.features || [],
       specifications: data.specifications || {},
-      availability: data.availability || { available: true, locations: [], unavailableDates: [] },
+      availability: { available: data.available !== false, locations: [], unavailableDates: [] },
       rating: data.rating || 0,
       reviewCount: data.review_count || 0,
       description: data.description,
@@ -139,13 +165,14 @@ export async function PUT(
 // DELETE /api/cars/[id] - Delete a car
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const { error } = await supabase
       .from('cars')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       console.error('Error deleting car:', error)

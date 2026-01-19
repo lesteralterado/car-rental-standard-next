@@ -5,8 +5,7 @@ import Image from "next/image";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
+import "swiper/swiper-bundle.css";
 
 const testimonials = [
   {
@@ -45,7 +44,7 @@ export default function Testimonials() {
       <div className="container mx-auto px-4">
         {/* Heading */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 relative inline-block after:block after:w-20 after:h-1 after:bg-yellow-500 after:mx-auto after:mt-2">
+          <h2 className="text-4xl font-bold mb-4 relative inline-block after:block after:w-20 after:h-1 after:bg-blue-500 after:mx-auto after:mt-2">
             What Our Clients Say
           </h2>
           <p className="text-lg text-gray-500">
@@ -75,6 +74,7 @@ export default function Testimonials() {
                       alt={t.name}
                       width={60}
                       height={60}
+                      unoptimized
                       className="object-cover"
                     />
                   </div>
@@ -85,7 +85,7 @@ export default function Testimonials() {
                 </div>
 
                 {/* Rating */}
-                <div className="flex text-yellow-500 mb-4">
+                <div className="flex text-blue-500 mb-4">
                   {Array.from({ length: Math.floor(t.rating) }).map((_, i) => (
                     <FaStar key={i} />
                   ))}
@@ -95,7 +95,7 @@ export default function Testimonials() {
                 {/* Content */}
                 <p className="italic text-gray-700 relative">
                   <span className="absolute -top-4 -left-2 text-7xl text-yellow-200 opacity-30">
-                    "
+                    &quot;
                   </span>
                   {t.text}
                 </p>
@@ -105,7 +105,7 @@ export default function Testimonials() {
         </Swiper>
 
         {/* Button */}
-        <button className="mt-8 mx-auto block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+        <button className="mt-8 mx-auto block bg-blue-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition">
           Leave a Review
         </button>
       </div>

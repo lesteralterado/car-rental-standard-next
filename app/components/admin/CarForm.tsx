@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Upload, X, Car, Plus } from 'lucide-react'
+import { Upload, Plus, X } from 'lucide-react'
 import { Car as CarType } from '@/types/car'
+import SHA1 from 'crypto-js/sha1'
 
 interface CarFormProps {
   car?: CarType | null
@@ -39,11 +41,11 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
     features: [] as string[],
     images: [] as string[],
     specifications: {
-      seats: 5,
+      seats: '5',
       transmission: 'automatic' as 'automatic' | 'manual',
       fuel: 'gasoline' as 'gasoline' | 'diesel' | 'electric' | 'hybrid',
-      doors: 4,
-      luggage: 3,
+      doors: '4',
+      luggage: '3',
       airConditioning: true
     },
     availability: {
@@ -58,6 +60,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
   const [newFeature, setNewFeature] = useState('')
   const [uploadingImages, setUploadingImages] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   useEffect(() => {
     if (car) {
@@ -73,12 +76,19 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         description: car.description || '',
         features: car.features || [],
         images: car.images || [],
-        specifications: car.specifications || {
-          seats: 5,
+        specifications: car.specifications ? {
+          seats: car.specifications.seats?.toString() || '5',
+          transmission: car.specifications.transmission || 'automatic',
+          fuel: car.specifications.fuel || 'gasoline',
+          doors: car.specifications.doors?.toString() || '4',
+          luggage: car.specifications.luggage?.toString() || '3',
+          airConditioning: car.specifications.airConditioning ?? true
+        } : {
+          seats: '5',
           transmission: 'automatic',
           fuel: 'gasoline',
-          doors: 4,
-          luggage: 3,
+          doors: '4',
+          luggage: '3',
           airConditioning: true
         },
         availability: car.availability || {
@@ -92,24 +102,24 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
     }
   }, [car])
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | boolean | string[] | object) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
   }
 
-  const handleSpecChange = (field: string, value: any) => {
+  const handleSpecChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       specifications: {
         ...prev.specifications,
-        [field]: value
+        [field]: field === 'seats' || field === 'doors' || field === 'luggage' ? value.toString() : value
       }
     }))
   }
 
-  const handleAvailabilityChange = (field: string, value: any) => {
+  const handleAvailabilityChange = (field: string, value: string | number | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       availability: {
@@ -136,25 +146,70 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
     }))
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files) return
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
 
     setUploadingImages(true)
     const uploadedUrls: string[] = []
 
+    // Cloudinary configuration - moved to environment variables for security and maintainability
+    const CLOUDINARY_CONFIG = {
+      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      apiSecret: process.env.CLOUDINARY_API_SECRET, // Note: This should ideally be server-side only
+      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    }
+
+    // Validate configuration
+    if (!CLOUDINARY_CONFIG.apiKey || !CLOUDINARY_CONFIG.apiSecret || !CLOUDINARY_CONFIG.cloudName) {
+      console.error('Cloudinary configuration is incomplete. Please check environment variables.')
+      setUploadingImages(false)
+      return
+    }
+
+    const { apiKey, apiSecret, cloudName } = CLOUDINARY_CONFIG
+
     for (const file of Array.from(files)) {
       try {
-        // For now, we'll use a placeholder. In a real implementation,
-        // you'd upload to Supabase Storage or another service
+        const timestamp = Math.floor(Date.now() / 1000)
+        const signature = SHA1(`timestamp=${timestamp}${apiSecret}`).toString()
+
         const formDataUpload = new FormData()
         formDataUpload.append('file', file)
+        formDataUpload.append('api_key', apiKey)
+        formDataUpload.append('timestamp', timestamp.toString())
+        formDataUpload.append('signature', signature)
+        formDataUpload.append('folder', 'car-rental')
 
-        // Placeholder - replace with actual upload logic
-        const placeholderUrl = `https://via.placeholder.com/800x600?text=${encodeURIComponent(file.name)}`
-        uploadedUrls.push(placeholderUrl)
+        // Create AbortController for timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+          signal: controller.signal
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Cloudinary upload failed:', response.status, errorData)
+          continue // Skip this file and continue with others
+        }
+
+        const result = await response.json()
+        if (result.secure_url) {
+          uploadedUrls.push(result.secure_url)
+        } else {
+          console.error('No secure_url in response:', result)
+        }
       } catch (error) {
-        console.error('Error uploading image:', error)
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.error('Image upload timed out')
+        } else {
+          console.error('Error uploading image:', error instanceof Error ? error.message : error)
+        }
       }
     }
 
@@ -165,11 +220,27 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
     setUploadingImages(false)
   }
 
-  const removeImage = (index: number) => {
+  const removeImage = (imageUrl: string) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter(img => img !== imageUrl)
     }))
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    handleImageUpload(e.dataTransfer.files)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -183,18 +254,31 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         pricePerDay: parseFloat(formData.pricePerDay),
         pricePerWeek: formData.pricePerWeek ? parseFloat(formData.pricePerWeek) : null,
         pricePerMonth: formData.pricePerMonth ? parseFloat(formData.pricePerMonth) : null,
+        specifications: {
+          ...formData.specifications,
+          seats: parseInt(formData.specifications.seats),
+          doors: parseInt(formData.specifications.doors),
+          luggage: parseInt(formData.specifications.luggage),
+        }
       }
 
       const url = car ? `/api/cars/${car.id}` : '/api/cars'
       const method = car ? 'PUT' : 'POST'
+
+      // Create AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(submitData),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         onSuccess()
@@ -202,7 +286,12 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         console.error('Failed to save car')
       }
     } catch (error) {
-      console.error('Error saving car:', error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('Request timed out')
+        alert('Request timed out. Please try again.')
+      } else {
+        console.error('Error saving car:', error)
+      }
     } finally {
       setSaving(false)
     }
@@ -334,7 +423,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
                 id="seats"
                 type="number"
                 value={formData.specifications.seats}
-                onChange={(e) => handleSpecChange('seats', parseInt(e.target.value))}
+                onChange={(e) => handleSpecChange('seats', e.target.value)}
               />
             </div>
             <div>
@@ -375,7 +464,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
                 id="doors"
                 type="number"
                 value={formData.specifications.doors}
-                onChange={(e) => handleSpecChange('doors', parseInt(e.target.value))}
+                onChange={(e) => handleSpecChange('doors', e.target.value)}
               />
             </div>
             <div>
@@ -384,7 +473,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
                 id="luggage"
                 type="number"
                 value={formData.specifications.luggage}
-                onChange={(e) => handleSpecChange('luggage', parseInt(e.target.value))}
+                onChange={(e) => handleSpecChange('luggage', e.target.value)}
               />
             </div>
             <div className="flex items-center space-x-2">
@@ -439,33 +528,47 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
           <CardTitle>Images</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              isDragOver ? 'border-primary bg-primary/5' : 'border-gray-300'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <Input
               type="file"
               multiple
               accept="image/*"
-              onChange={handleImageUpload}
+              onChange={(e) => handleImageUpload(e.target.files)}
               className="hidden"
               id="image-upload"
             />
             <Label htmlFor="image-upload" className="cursor-pointer">
-              <Button type="button" variant="outline" disabled={uploadingImages}>
-                <Upload className="h-4 w-4 mr-2" />
-                {uploadingImages ? 'Uploading...' : 'Upload Images'}
-              </Button>
+              <div className="flex flex-col items-center space-y-2">
+                <Upload className="h-8 w-8 text-gray-400" />
+                <p className="text-sm text-gray-600">
+                  {uploadingImages ? 'Uploading...' : 'Drag and drop images here, or click to select'}
+                </p>
+                <Button type="button" variant="outline" disabled={uploadingImages} className="w-full sm:w-auto">
+                  {uploadingImages ? 'Uploading...' : 'Select Images'}
+                </Button>
+              </div>
             </Label>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {formData.images.map((image, index) => (
-              <div key={index} className="relative">
-                <img
+            {formData.images.filter(image => image).map((image, index) => (
+              <div key={image} className="relative">
+                <Image
                   src={image}
                   alt={`Car image ${index + 1}`}
+                  width={200}
+                  height={96}
                   className="w-full h-24 object-cover rounded"
                 />
                 <button
                   type="button"
-                  onClick={() => removeImage(index)}
+                  onClick={() => removeImage(image)}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                 >
                   <X className="h-3 w-3" />

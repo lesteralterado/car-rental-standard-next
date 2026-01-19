@@ -47,7 +47,7 @@ export default function FAQSection() {
     <section id="faqs" className="py-24 bg-slate-100">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold relative after:content-[''] after:block after:w-16 after:h-1 after:bg-yellow-500 after:mx-auto after:mt-2">
+          <h2 className="text-3xl font-bold relative after:content-[''] after:block after:w-16 after:h-1 after:bg-blue-500 after:mx-auto after:mt-2">
             Frequently Asked Questions
           </h2>
           <p className="text-gray-600 mt-2">
@@ -69,7 +69,7 @@ export default function FAQSection() {
               >
                 <h3 className="text-lg font-medium">{faq.question}</h3>
                 <FaChevronDown
-                  className={`text-yellow-500 transform transition-transform duration-300 ${
+                  className={`text-primary transform transition-transform duration-300 ${
                     activeIndex === index ? "rotate-180" : ""
                   }`}
                 />

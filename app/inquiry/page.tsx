@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/app/components/providers/layout/header';
-import Footer from '@/app/components/providers/layout/footer';
 import InquiryForm from '@/app/components/InquiryForm';
 import useAuth from '@/hooks/useAuth';
 
@@ -37,12 +35,8 @@ export default function InquiryPage() {
   }
 
   return (
-    <>
-      <Header />
-      <main className="min-h-screen">
-        <InquiryForm />
-      </main>
-      <Footer />
-    </>
+    <main className="min-h-screen">
+      <InquiryForm />
+    </main>
   );
 }

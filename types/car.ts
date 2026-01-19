@@ -26,6 +26,13 @@ export interface Car {
   }
   rating: number
   reviewCount: number
+  reviews?: Array<{
+    id: number
+    user: string
+    rating: number
+    comment: string
+    date: string
+  }>
   description: string
   popular: boolean
   featured: boolean

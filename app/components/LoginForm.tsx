@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import client from '@/api/client';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -19,18 +18,39 @@ export default function LoginForm() {
     setError('');
 
     // Check for demo credentials
-    if (email === 'demo@example.com' && password === 'demo123') {
+    const demoUsers = {
+      'juan@example.com': {
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        email: 'juan@example.com',
+        user_metadata: { name: 'Juan dela Cruz' },
+        role: 'client'
+      },
+      'maria@example.com': {
+        id: '550e8400-e29b-41d4-a716-446655440002',
+        email: 'maria@example.com',
+        user_metadata: { name: 'Maria Santos' },
+        role: 'client'
+      },
+      'admin@example.com': {
+        id: '550e8400-e29b-41d4-a716-446655440003',
+        email: 'admin@example.com',
+        user_metadata: { name: 'Admin User' },
+        role: 'admin'
+      },
+      'demo@example.com': {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        user_metadata: { name: 'Demo User' },
+        role: 'client'
+      }
+    };
+
+    const demoUser = demoUsers[email as keyof typeof demoUsers];
+    if (demoUser && password === 'demo123') {
       // Simulate successful login for demo
       try {
-        // Create a mock session object
-        const mockUser = {
-          id: 'demo-user-id',
-          email: 'demo@example.com',
-          user_metadata: { name: 'Demo User' }
-        };
-
         // Store in localStorage to persist demo session
-        localStorage.setItem('demo_user', JSON.stringify(mockUser));
+        localStorage.setItem('demo_user', JSON.stringify(demoUser));
 
         // Trigger a page reload or state update
         window.location.reload();
@@ -38,24 +58,30 @@ export default function LoginForm() {
       } catch (err) {
         setError('Demo login failed');
         setLoading(false);
+        console.error('Demo login error:', err);
         return;
       }
     }
 
     try {
+      console.log('Attempting login for email:', email);
+      // Sign in with Supabase Auth directly
       const { data, error } = await client.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.log('Login error from Supabase:', error);
         setError(error.message);
       } else {
         // Login successful, the AuthProvider will handle the state update
         console.log('Login successful', data);
       }
     } catch (err) {
+      console.log('Unexpected login error:', err);
       setError('An unexpected error occurred');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -110,24 +136,55 @@ export default function LoginForm() {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setEmail('demo@example.com');
-                setPassword('demo123');
-              }}
-              disabled={loading}
-            >
-              Use Demo Account
-            </Button>
+            <div className="space-y-2">
+              <p className="text-sm text-center text-gray-600 dark:text-gray-400">Try Demo Accounts:</p>
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEmail('juan@example.com');
+                    setPassword('demo123');
+                  }}
+                  disabled={loading}
+                  className="text-xs"
+                >
+                  Juan dela Cruz (Client)
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEmail('maria@example.com');
+                    setPassword('demo123');
+                  }}
+                  disabled={loading}
+                  className="text-xs"
+                >
+                  Maria Santos (Client)
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEmail('admin@example.com');
+                    setPassword('demo123');
+                  }}
+                  disabled={loading}
+                  className="text-xs"
+                >
+                  Admin User (Admin)
+                </Button>
+              </div>
+            </div>
           </form>
           <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Don't have an account? <a href="#" className="text-blue-600 hover:underline">Sign up</a></p>
+            <p>Don&quot; have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a></p>
             <p className="mt-2 text-xs">
-              <strong>Demo Credentials:</strong><br />
-              Email: demo@example.com<br />
+              <strong>All Demo Accounts:</strong><br />
               Password: demo123
             </p>
           </div>

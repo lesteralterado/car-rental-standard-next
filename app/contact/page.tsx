@@ -13,14 +13,14 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <div className="bg-primary text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Contact Us
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              We're here to help with your car rental needs
+              We&quot;re here to help with your car rental needs
             </p>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   <Clock className="h-5 w-5 text-blue-600 mr-3" />
                   <div>
                     <CardTitle className="text-lg">Business Hours</CardTitle>
-                    <CardDescription>When we're open</CardDescription>
+                    <CardDescription>When we&quot;re open</CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -115,7 +115,7 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Send us a Message</CardTitle>
                 <CardDescription>
-                  Fill out the form below and we'll get back to you as soon as possible.
+                  Fill out the form below and we&quot;ll get back to you as soon as possible.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -217,14 +217,14 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Valid driver's license, government-issued ID, and proof of address. International visitors need a passport and international driving permit.
+                  Valid driver&quot;s license, government-issued ID, and proof of address. International visitors need a passport and international driving permit.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">What's your minimum rental period?</CardTitle>
+                <CardTitle className="text-lg">What&quot;s your minimum rental period?</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
