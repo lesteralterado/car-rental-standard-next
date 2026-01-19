@@ -7,7 +7,7 @@ import client from '@/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Users, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
-import AdminSidebar from '@/app/components/AdminSidebar';
+import Admin from '@/app/components/AdminSidebar';
 
 interface DashboardStats {
   totalBookings: number;
