@@ -6,13 +6,9 @@ import useAuth from '@/hooks/useAuth';
 import client from '@/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-<<<<<<< HEAD
-import { Car, Users, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
 import Admin from '@/app/components/AdminSidebar';
-=======
-import { Car, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Users, Car, DollarSign, Bell, TrendingUp, Calendar, CheckCircle, Clock } from 'lucide-react';
 import AdminRoute from '@/app/components/AdminRoute';
->>>>>>> 55affc95dd828628e484348e3bd429e6e50ee011
 
 interface DashboardStats {
   totalBookings: number;

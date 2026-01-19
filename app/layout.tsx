@@ -11,6 +11,7 @@ import ChatbotWrapper from './components/ChatbotWrapper'
 // import Footer from './components/providers/layout/footer'
 // import AdminSidebar from './components/AdminSidebar'
 import LayoutContent from './components/LayoutContent'
+import { GoogleTagManager } from '@next/third-parties/google'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ 
@@ -18,6 +19,8 @@ const montserrat = Montserrat({
   variable: '--font-montserrat',
   weight: ['300', '400', '500', '600', '700', '800']
 })
+
+const metericsId = process.env.MEASUREMENTID || 'G-RBCMW22YP2';
 
 export const metadata: Metadata = {
   title: {
@@ -89,6 +92,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#2563eb" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
+      <GoogleTagManager gtmId={metericsId} />
       <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}>
         {/* <ThemeProvider
           attribute="class"
