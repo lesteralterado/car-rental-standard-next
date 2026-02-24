@@ -13,12 +13,14 @@ CREATE TYPE notification_type AS ENUM ('booking_submitted', 'booking_approved', 
 -- Profiles table (extends auth.users)
 CREATE TABLE profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    email TEXT UNIQUE,
     role user_role DEFAULT 'client',
     full_name TEXT,
     phone TEXT,
     drivers_license_number TEXT,
     drivers_license_verified BOOLEAN DEFAULT FALSE,
     drivers_license_url TEXT, -- URL to uploaded license image
+    password_hash TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );

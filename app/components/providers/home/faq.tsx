@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaChevronDown } from "react-icons/fa";
 
 const faqs = [
@@ -38,50 +39,95 @@ const faqs = [
 
 export default function FAQSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: "-100px" }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const toggleFAQ = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
   return (
-    <section id="faqs" className="py-24 bg-slate-100">
+    <section ref={sectionRef} id="faqs" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold relative after:content-[''] after:block after:w-16 after:h-1 after:bg-blue-500 after:mx-auto after:mt-2">
-            Frequently Asked Questions
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.2 }}
+            className="inline-block px-4 py-2 bg-[#f4b400]/10 text-[#f4b400] rounded-full text-sm font-semibold mb-4"
+          >
+            FAQ
+          </motion.div>
+          
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Frequently Asked <span className="gradient-text">Questions</span>
           </h2>
-          <p className="text-gray-600 mt-2">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Find answers to common inquiries about our rental process
           </p>
-        </div>
+        </motion.div>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto space-y-4">
           {faqs.map((faq, index) => (
-            <div
+            <motion.div
               key={index}
-              className={`bg-white rounded-lg mb-5 shadow-md overflow-hidden transition-all duration-300 ${
-                activeIndex === index ? "bg-gray-50" : ""
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.1 * index }}
+              className={`bg-white rounded-2xl overflow-hidden transition-all duration-300 ${
+                activeIndex === index ? "shadow-xl" : "shadow-md hover:shadow-lg"
               }`}
             >
               <div
                 className="flex items-center justify-between px-6 py-5 cursor-pointer transition-colors duration-300"
                 onClick={() => toggleFAQ(index)}
               >
-                <h3 className="text-lg font-medium">{faq.question}</h3>
-                <FaChevronDown
-                  className={`text-primary transform transition-transform duration-300 ${
-                    activeIndex === index ? "rotate-180" : ""
-                  }`}
-                />
+                <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                <motion.div
+                  animate={{ rotate: activeIndex === index ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex-shrink-0 w-8 h-8 bg-[#f4b400]/10 rounded-full flex items-center justify-center"
+                >
+                  <FaChevronDown className="text-[#f4b400] w-4 h-4" />
+                </motion.div>
               </div>
-              <div
-                className={`px-6 overflow-hidden transition-all duration-500 ease-in-out ${
-                  activeIndex === index ? "max-h-96 pb-5" : "max-h-0"
-                }`}
-              >
-                <p className="text-gray-600">{faq.answer}</p>
-              </div>
-            </div>
+              <AnimatePresence>
+                {activeIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="px-6 pb-6">
+                      <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
         </div>
       </div>

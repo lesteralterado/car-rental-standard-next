@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import client from '@/api/client';
 
 export default function SignUpForm() {
   const [name, setName] = useState('');
@@ -31,35 +32,20 @@ export default function SignUpForm() {
       const { data, error } = await client.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
       });
 
       if (error) {
         setError(error.message);
+        setLoading(false);
         return;
       }
 
-      // After successful auth signup, create customer record
-      if (data.user) {
-        // Hash the password before storing
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        const { error: customerError } = await client
-          .from('customers')
-          .insert({
-            name: name,
-            email: email,
-            password: hashedPassword, // Store hashed password
-            user_id: data.user.id
-          });
-
-        if (customerError) {
-          console.error('Customer creation error:', customerError);
-          setError('Account created but customer record failed. Please contact support.');
-          return;
-        }
-      }
-
+      // Profile is automatically created by the database trigger
       setSuccess(true);
       console.log('Sign up successful', data);
     } catch (err) {

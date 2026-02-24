@@ -39,6 +39,12 @@ export async function GET(request: NextRequest) {
 
     let query = supabase.from('inquiries').select(`
       *,
+      profiles (
+        id,
+        full_name,
+        phone,
+        email
+      ),
       cars (
         id,
         name,

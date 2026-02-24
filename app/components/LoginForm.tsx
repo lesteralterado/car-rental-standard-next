@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import client from '@/api/client';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -65,22 +66,32 @@ export default function LoginForm() {
 
     try {
       console.log('Attempting login for email:', email);
-      // Sign in with Supabase Auth directly
-      const { data, error } = await client.auth.signInWithPassword({
-        email,
-        password,
+      // Sign in using the API endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        console.log('Login error from Supabase:', error);
-        setError(error.message);
-      } else {
-        // Login successful, the AuthProvider will handle the state update
-        console.log('Login successful', data);
+      const result = await response.json();
+      console.log('Login response:', response.status, result);
+
+      if (!response.ok) {
+        setError(result.error || 'Login failed');
+        setLoading(false);
+        return;
       }
+
+      localStorage.setItem('token', result.token);
+      // Store user data in localStorage for AuthProvider to pick up
+      localStorage.setItem('user', JSON.stringify(result.user));
+      // Trigger a page reload or state update
+      window.location.reload();
     } catch (err) {
-      console.log('Unexpected login error:', err);
-      setError('An unexpected error occurred');
+      console.log('Network/login error:', err);
+      setError('Connection error. Please check your internet connection.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);

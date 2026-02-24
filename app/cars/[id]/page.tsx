@@ -227,16 +227,22 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
 
       // Note: License upload removed as per schema requirements
 
-      // Get customer ID from customers table
-      const { data: customer, error: customerError } = await client
-        .from('customers')
+      // Get customer profile from profiles table
+      const userId = user?.id
+      if (!userId) {
+        toast.error("User ID not found. Please sign in again.")
+        return
+      }
+      
+      const { data: profile, error: profileError } = await client
+        .from('profiles')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('id', userId)
         .single()
 
-      if (customerError || !customer) {
-        console.error('Customer not found:', customerError)
-        toast.error("Customer record not found. Please contact support.")
+      if (profileError || !profile) {
+        console.error('Profile not found:', profileError)
+        toast.error("Profile not found. Please contact support.")
         return
       }
 
@@ -244,8 +250,8 @@ export default function CarDetailPage({ params }: CarDetailPageProps) {
       const { error: bookingError } = await client
         .from('bookings')
         .insert({
-          customer_id: customer.id, // Use actual customer ID from database
-          car_id: parseInt(car.id), // Convert car id to bigint
+          user_id: profile.id, // Use actual profile ID from database
+          car_id: car.id,
           start_date: formData.pickupDate.split('T')[0], // Date only
           end_date: formData.returnDate.split('T')[0], // Date only
           status: 'pending'
