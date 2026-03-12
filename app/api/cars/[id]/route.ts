@@ -8,7 +8,7 @@ const supabase = createClient(
 
 interface CarUpdateData {
   name?: string
-  make?: string
+  brand?: string
   model?: string
   year?: number
   category?: string
@@ -53,7 +53,7 @@ export async function GET(
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.make,
+      brand: data.brand,
       model: data.model,
       year: data.year,
       category: data.category,
@@ -90,7 +90,7 @@ export async function PUT(
     // Transform the data to match database schema
     const carData: CarUpdateData = {
       name: body.name,
-      make: body.brand,
+      brand: body.brand,
       model: body.model,
       year: body.year ? parseInt(body.year) : undefined,
       category: body.category,
@@ -137,7 +137,7 @@ export async function PUT(
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.make,
+      brand: data.brand,
       model: data.model,
       year: data.year,
       category: data.category,

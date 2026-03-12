@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const transformedCars = cars.map(car => ({
       id: car.id,
       name: car.name,
-      brand: car.make,
+      brand: car.brand,
       model: car.model,
       year: car.year,
       category: car.category,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Transform the data to match database schema
     const carData = {
       name: body.name,
-      make: body.brand, // map brand to make
+      brand: body.brand,
       model: body.model,
       year: parseInt(body.year),
       category: body.category,
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     const transformedCar = {
       id: data.id,
       name: data.name,
-      brand: data.make,
+      brand: data.brand,
       model: data.model,
       year: data.year,
       category: data.category,

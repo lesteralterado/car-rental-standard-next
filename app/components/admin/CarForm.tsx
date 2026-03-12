@@ -283,7 +283,9 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
       if (response.ok) {
         onSuccess()
       } else {
-        console.error('Failed to save car')
+        const errorData = await response.json().catch(() => ({ error: 'Failed to save car' }))
+        console.error('Failed to save car:', errorData)
+        alert(errorData.error || 'Failed to save car. Please check your input and try again.')
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -291,6 +293,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
         alert('Request timed out. Please try again.')
       } else {
         console.error('Error saving car:', error)
+        alert('An unexpected error occurred. Please try again.')
       }
     } finally {
       setSaving(false)
@@ -528,9 +531,12 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
           <CardTitle>Images</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Drag and Drop Zone */}
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              isDragOver ? 'border-primary bg-primary/5' : 'border-gray-300'
+            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
+              isDragOver 
+                ? 'border-primary bg-primary/10 scale-[1.02]' 
+                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
             }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -543,39 +549,99 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
               onChange={(e) => handleImageUpload(e.target.files)}
               className="hidden"
               id="image-upload"
+              disabled={uploadingImages}
             />
-            <Label htmlFor="image-upload" className="cursor-pointer">
-              <div className="flex flex-col items-center space-y-2">
-                <Upload className="h-8 w-8 text-gray-400" />
-                <p className="text-sm text-gray-600">
-                  {uploadingImages ? 'Uploading...' : 'Drag and drop images here, or click to select'}
-                </p>
-                <Button type="button" variant="outline" disabled={uploadingImages} className="w-full sm:w-auto">
-                  {uploadingImages ? 'Uploading...' : 'Select Images'}
+            <Label htmlFor="image-upload" className={`cursor-pointer ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className="flex flex-col items-center space-y-3">
+                <div className={`p-3 rounded-full bg-primary/10 ${isDragOver ? 'animate-bounce' : ''}`}>
+                  <Upload className={`h-8 w-8 text-primary ${uploadingImages ? 'animate-pulse' : ''}`} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-gray-700">
+                    {uploadingImages ? 'Uploading images...' : 'Drag and drop images here'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    or click to browse • PNG, JPG, WEBP up to 10MB each
+                  </p>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  disabled={uploadingImages}
+                  className="mt-2"
+                >
+                  {uploadingImages ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Select Images
+                    </>
+                  )}
                 </Button>
               </div>
             </Label>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {formData.images.filter(image => image).map((image, index) => (
-              <div key={image} className="relative">
-                <Image
-                  src={image}
-                  alt={`Car image ${index + 1}`}
-                  width={200}
-                  height={96}
-                  className="w-full h-24 object-cover rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(image)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+
+          {/* Upload Progress */}
+          {uploadingImages && (
+            <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+              <span className="text-sm text-blue-700">Processing images...</span>
+            </div>
+          )}
+
+          {/* Image Preview Grid */}
+          {formData.images.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Uploaded Images ({formData.images.length})
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {formData.images.filter(image => image).map((image, index) => (
+                  <div 
+                    key={image} 
+                    className="relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <Image
+                      src={image}
+                      alt={`Car image ${index + 1}`}
+                      width={200}
+                      height={120}
+                      className="w-full h-28 object-cover"
+                    />
+                    {/* Hover overlay with remove button */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image)}
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    {/* Image number badge */}
+                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                      #{index + 1}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <p className="text-xs text-gray-500">
+                Click on an image to remove it
+              </p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {formData.images.length === 0 && !uploadingImages && (
+            <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
+              <p className="text-sm">No images added yet. Add at least one image for your car.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
