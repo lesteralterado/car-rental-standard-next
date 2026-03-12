@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import client from '@/api/client';
 
 export default function SignUpForm() {
   const [name, setName] = useState('');
@@ -29,25 +28,36 @@ export default function SignUpForm() {
     }
 
     try {
-      const { data, error } = await client.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name
-          }
-        }
+      // Use the API endpoint instead of Supabase client directly
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          full_name: name,
+          isOAuth: false,
+          oauthId: null
+        }),
       });
 
-      if (error) {
-        setError(error.message);
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || 'Signup failed');
         setLoading(false);
         return;
       }
 
-      // Profile is automatically created by the database trigger
+      // Store the token
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
+      
       setSuccess(true);
-      console.log('Sign up successful', data);
     } catch (err) {
       setError('An unexpected error occurred');
       console.error('Sign up error:', err);
@@ -66,7 +76,7 @@ export default function SignUpForm() {
               Account Created!
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Please check your email to verify your account.
+              Your account has been created successfully. You can now sign in.
             </p>
           </CardContent>
         </Card>

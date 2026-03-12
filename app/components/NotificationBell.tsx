@@ -68,7 +68,6 @@ export default function NotificationBell() {
             filter: `user_id=eq.${(user as User).id}`,
           },
           (payload) => {
-            console.log('Notification change:', payload);
             fetchNotifications(); // Refetch notifications on any change
           }
         )

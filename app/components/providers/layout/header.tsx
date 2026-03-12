@@ -13,7 +13,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     setIsMounted(true)
@@ -38,9 +38,9 @@ export default function Header() {
     { name: 'Inquiry', href: '/inquiry' },
   ]
 
-  const handleLogout = () => {
-    localStorage.removeItem('demo_user')
-    window.location.reload()
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = '/'
   }
 
   return (

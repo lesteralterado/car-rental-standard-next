@@ -8,7 +8,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+// Get JWT_SECRET at runtime to fail if not set
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET as string;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return secret;
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +49,7 @@ export async function POST(request: NextRequest) {
         email: profile.email,
         role: profile.role
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     )
 

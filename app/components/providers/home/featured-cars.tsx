@@ -25,8 +25,15 @@ export default function FeaturedCars() {
   }, [])
 
   const featuredCars = cars.filter(car => car.featured)
-  const itemsPerSlide = 3
-
+  
+  // Dynamic items per slide based on screen size and number of cars
+  const getItemsPerSlide = () => {
+    if (featuredCars.length <= 1) return 1
+    if (featuredCars.length === 2) return 2
+    return 3
+  }
+  
+  const itemsPerSlide = getItemsPerSlide()
   const totalSlides = Math.ceil(featuredCars.length / itemsPerSlide)
 
   useEffect(() => {
@@ -137,14 +144,32 @@ export default function FeaturedCars() {
               <div className="overflow-hidden rounded-3xl">
                 <div
                   className="flex transition-transform duration-700 ease-out"
-                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  style={{ 
+                    transform: `translateX(-${currentSlide * 100}%)`,
+                    width: '100%'
+                  }}
                 >
-                  {Array.from({ length: totalSlides }).map((_, slideIndex) => (
-                    <div key={slideIndex} className="w-full flex-shrink-0">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4">
-                        {featuredCars
-                          .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
-                          .map((car, index) => (
+                  {Array.from({ length: totalSlides }).map((_, slideIndex) => {
+                    const startIndex = slideIndex * itemsPerSlide
+                    const endIndex = Math.min(startIndex + itemsPerSlide, featuredCars.length)
+                    const slideCars = featuredCars.slice(startIndex, endIndex)
+                    
+                    return (
+                      <div 
+                        key={slideIndex} 
+                        className="w-full flex-shrink-0"
+                        style={{ minWidth: '100%' }}
+                      >
+                        <div 
+                          className={`grid gap-8 p-4 ${
+                            slideCars.length === 1 
+                              ? 'grid-cols-1 max-w-md mx-auto' 
+                              : slideCars.length === 2 
+                                ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
+                                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                          }`}
+                        >
+                          {slideCars.map((car, index) => (
                             <motion.div
                               key={car.id}
                               variants={itemVariants}
@@ -154,9 +179,10 @@ export default function FeaturedCars() {
                               <CarCard car={car} view="grid" />
                             </motion.div>
                           ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 

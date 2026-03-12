@@ -31,23 +31,19 @@ export default function AdminBookings() {
   const [loadingBookings, setLoadingBookings] = useState(true);
 
   useEffect(() => {
-    console.log('User in admin bookings:', user);
     if (user) {
       fetchBookings();
     }
   }, [user]);
 
   const fetchBookings = async () => {
-    console.log('Starting fetch bookings');
     try {
       const { data, error } = await client
         .from('bookings')
         .select(`*`);
 
       if (error) throw error;
-      console.log('Fetched bookings data:', data);
       setBookings(data || []);
-      console.log('Pending bookings count:', data?.filter(b => b.status === 'pending').length || 0);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {

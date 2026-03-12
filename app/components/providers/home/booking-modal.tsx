@@ -21,6 +21,10 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
    const [loading, setLoading] = useState(false);
    const [showPaymentModal, setShowPaymentModal] = useState(false);
    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+   const [paymentMethod, setPaymentMethod] = useState<'gcash' | 'bank'>('gcash');
+   const [gcashRef, setGcashRef] = useState('');
+   const [carPrice, setCarPrice] = useState<number>(3000); // Default price per day
+   const [bankRef, setBankRef] = useState('');
    const [formData, setFormData] = useState({
      name: "",
      email: "",
@@ -44,11 +48,56 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
      }
    }, [isOpen, user]);
 
+   // Fetch car price when car model changes
+   useEffect(() => {
+     const fetchCarPrice = async () => {
+       if (formData.car) {
+         try {
+           const { data: car } = await supabase
+             .from('cars')
+             .select('price_per_day')
+             .eq('model', formData.car)
+             .single();
+           
+           if (car) {
+             setCarPrice(car.price_per_day || 3000);
+           }
+         } catch (error) {
+           console.error('Error fetching car price:', error);
+           toast.error('Could not fetch car price. Using default price.');
+         }
+       }
+     };
+     
+     fetchCarPrice();
+   }, [formData.car]);
+
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
+  const nextStep = () => {
+    // Validate payment details before proceeding from step 3
+    if (step === 3) {
+      if (paymentMethod === 'gcash') {
+        // Validate GCash reference format - should be 13 digits
+        const gcashRefClean = gcashRef.replace(/\s/g, '');
+        if (!gcashRefClean.trim()) {
+          toast.error('Please enter your GCash reference number');
+          return;
+        }
+        if (!/^[A-Za-z0-9]{8,20}$/.test(gcashRefClean)) {
+          toast.error('GCash reference must be 8-20 alphanumeric characters');
+          return;
+        }
+      }
+      if (paymentMethod === 'bank' && !bankRef.trim()) {
+        toast.error('Please enter your bank reference number');
+        return;
+      }
+    }
+    setStep((prev) => Math.min(prev + 1, 4));
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const checkCarAvailability = async (carId: string, pickupDate: string, returnDate: string): Promise<boolean> => {
@@ -151,6 +200,16 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
 
       // Create booking as pending for admin approval
       const bookingStatus = isAvailable ? 'pending' : 'rejected';
+      
+      // Build payment reference based on payment method
+      let paymentReference = '';
+      if (paymentMethod === 'gcash') {
+        paymentReference = gcashRef;
+      } else if (paymentMethod === 'bank') {
+        paymentReference = bankRef;
+      }
+      // Note: Card details are NOT stored for security reasons
+      
       const { error: bookingError } = await supabase
         .from('bookings')
         .insert({
@@ -161,6 +220,8 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
           pickup_location: formData.location === 'custom' ? formData.customLocation : formData.location,
           total_price: totalPrice,
           status: bookingStatus,
+          payment_method: paymentMethod,
+          payment_reference: paymentReference,
         })
         .select()
         .single();
@@ -250,11 +311,11 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
                   s === step ? "text-blue-500 font-medium" : "text-gray-500"
                 }`}
               >
-                {s === 0 && "Authentication"}
-                {s === 1 && "Personal Info"}
-                {s === 2 && "Rental Details"}
-                {s === 3 && "License & Payment"}
-                {s === 4 && "Confirmation"}
+                {s === 0 && "🔐 Auth"}
+                {s === 1 && "Personal"}
+                {s === 2 && "Rental"}
+                {s === 3 && "License & Pay"}
+                {s === 4 && "Confirm"}
               </span>
               {s < 4 && (
                 <div className="absolute top-4 right-[-50%] w-full h-[2px] bg-gray-200 z-0" />
@@ -461,13 +522,109 @@ export default function BookingModal({ isOpen, onClose, carModel }: CarCardProps
                 <p className="text-sm text-gray-500 mt-1">Please upload a clear photo of your driver&quot;s license</p>
               </div>
 
+              {/* Payment Method Selection */}
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Payment Information</label>
-                <div className="border rounded p-4 bg-gray-50">
-                  <p className="text-sm text-gray-600 mb-2">Payment will be processed after admin approval</p>
-                  <p className="text-sm font-medium">Total Amount: To be calculated after approval</p>
+                <label className="block mb-2 font-medium">Select Payment Method</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* GCash Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('gcash')}
+                    className={`border-2 rounded-lg p-3 flex flex-col items-center justify-center transition-all ${
+                      paymentMethod === 'gcash' 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-2xl mb-1">💚</span>
+                    <span className="text-sm font-medium">GCash</span>
+                  </button>
+
+                  {/* Bank Transfer Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('bank')}
+                    className={`border-2 rounded-lg p-3 flex flex-col items-center justify-center transition-all ${
+                      paymentMethod === 'bank' 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-2xl mb-1">🏦</span>
+                    <span className="text-sm font-medium">Bank</span>
+                  </button>
                 </div>
               </div>
+
+              {/* GCash Payment - Show QR Code */}
+              {paymentMethod === 'gcash' && (
+                <div className="mb-4 border-2 border-green-500 rounded-lg p-4 bg-green-50">
+                  <div className="text-center">
+                    <h4 className="font-semibold text-green-700 mb-3">Pay with GCash</h4>
+                    
+                    {/* GCash QR Code */}
+                    <div className="mb-4">
+                      <img 
+                        src="/assets/QRCode.jpg" 
+                        alt="Scan to pay with GCash" 
+                        className="w-48 h-48 mx-auto rounded-lg border-2 border-white shadow-md"
+                      />
+                    </div>
+                    
+                    <p className="text-sm text-gray-700 mb-2">
+                      <strong>Scan the QR code</strong> with your GCash app
+                    </p>
+                    
+                    <div className="bg-white rounded p-3 mb-3">
+                      <p className="text-xs text-gray-500">Or send payment to:</p>
+                      <p className="font-bold text-lg">{process.env.NEXT_PUBLIC_GCASH_NUMBER || 'Contact Support'}</p>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-3">
+                      Amount to pay: <span className="font-bold text-green-700">₱{formData.car && formData.pickupDate && formData.returnDate ? 
+                        Math.ceil((new Date(formData.returnDate).getTime() - new Date(formData.pickupDate).getTime()) / (1000 * 60 * 60 * 24)) * carPrice : '0'}</span>
+                    </p>
+
+                    {/* Reference Number Input */}
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium mb-1">Enter GCash Reference No.</label>
+                      <input
+                        type="text"
+                        value={gcashRef}
+                        onChange={(e) => setGcashRef(e.target.value)}
+                        placeholder="e.g., ABC123456789"
+                        className="w-full border rounded px-3 py-2 text-center"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Enter the 13-digit reference number from your GCash transaction
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bank Transfer */}
+              {paymentMethod === 'bank' && (
+                <div className="mb-4 border rounded-lg p-4 bg-blue-50">
+                  <h4 className="font-semibold text-blue-700 mb-3">Bank Transfer Details</h4>
+                  <div className="text-sm space-y-2">
+                    <p><strong>Bank:</strong> {process.env.NEXT_PUBLIC_BANK_NAME || 'BDO'}</p>
+                    <p><strong>Account Name:</strong> {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || 'Car Rental Pro'}</p>
+                    <p><strong>Account Number:</strong> {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || 'Contact Support'}</p>
+                    <p className="text-gray-600 mt-2">Please upload your deposit slip or enter reference number after transfer.</p>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium mb-1">Reference/Deposit Slip No.</label>
+                    <input
+                      type="text"
+                      value={bankRef}
+                      onChange={(e) => setBankRef(e.target.value)}
+                      placeholder="Enter reference number"
+                      className="w-full border rounded px-3 py-2"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="flex items-start gap-2 text-sm">

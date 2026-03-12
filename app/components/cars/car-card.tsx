@@ -20,8 +20,6 @@ export default function CarCard({ car, view = 'grid' }: CarCardProps) {
   const [imageError, setImageError] = useState(false)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
 
-  console.log(`CarCard for ${car.name}: images =`, car.images, `first image = "${car.images[0]}"`)
-
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
